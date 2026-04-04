@@ -53,15 +53,15 @@
                 <!-- Scouting Grade -->
                 <div class="dashboard-card flex flex-col justify-center items-center py-8">
                     <span class="text-label mb-2">Final Scouting Grade</span>
-                    <scouting-grade score="59" total="80"></scouting-grade>
+                    <scouting-grade id="mainScore" score="0" total="100"></scouting-grade>
                 </div>
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 gap-4">
-                    <metric-card id="metric-arm" label="ARM-ANG" value="142.5" unit="°" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=ARM"></metric-card>
-                    <metric-card id="metric-knee" label="KNEE-DRV" value="88.2" unit="°" trend="stable" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=KNEE"></metric-card>
-                    <metric-card id="metric-torque" label="TORQUE" value="1240" unit="N/m" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=TORQUE"></metric-card>
-                    <metric-card id="metric-foot" label="FOOT-FIX" value="98" unit="%" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=FOOT"></metric-card>
+                    <metric-card id="metric-arm" label="ARM-ANG" value="0.0" unit="°" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=ARM"></metric-card>
+                    <metric-card id="metric-knee" label="KNEE-DRV" value="0.0" unit="°" trend="stable" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=KNEE"></metric-card>
+                    <metric-card id="metric-torque" label="TORQUE" value="0" unit="N/m" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=TORQUE"></metric-card>
+                    <metric-card id="metric-foot" label="FOOT-FIX" value="0" unit="%" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=FOOT"></metric-card>
                 </div>
 
                 <!-- Kinematic Sequence -->
@@ -92,16 +92,52 @@
                 </div>
 
                 <!-- Director's Verdict -->
-                <div class="dashboard-card flex-1 flex flex-col">
+                <div class="dashboard-card flex-1 flex flex-col min-h-[150px]">
                     <span class="text-label mb-4">Director's Verdict</span>
-                    <div id="verdictBox" class="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 text-sm leading-relaxed text-slate-300">
-                        <p class="mb-2">임팩트 시 하체 고정력이 우수함 (FOOT-FIX: 98%).</p>
-                        <p class="mb-2">팔의 각도가 다소 높게 형성되어 스윙 궤적이 가파릅니다 (ARM-ANG: 142.5°).</p>
-                        <p>토크 발생 시 골반의 회전력이 인상적이며, 에너지가 효율적으로 전달되고 있습니다.</p>
+                    <div id="verdictBox" class="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 text-sm leading-relaxed text-slate-300 overflow-y-auto max-h-[250px]">
+                        <p class="text-slate-500 italic">영상을 분석하면 정밀 평가가 여기에 기록됩니다.</p>
                     </div>
                 </div>
             </section>
         </main>
+
+        <!-- Bottom Extension: Highlights & Recommendations -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6 pt-0 relative z-10">
+            <!-- Action Highlights -->
+            <div class="dashboard-card">
+                <span class="text-label mb-6">Action Highlights</span>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <span class="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Well-Performed Actions</span>
+                        <div id="wellPerformedContainer" class="flex flex-col gap-4">
+                            <p class="text-slate-600 text-[10px] italic">분석 진행 중 우수 동작이 캡쳐됩니다.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <span class="text-[10px] font-black text-rose-400 uppercase tracking-widest">Needs Improvement</span>
+                        <div id="needsImprovementContainer" class="flex flex-col gap-4">
+                            <p class="text-slate-600 text-[10px] italic">보완이 필요한 동작이 캡쳐됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Personal Recommendations -->
+            <div class="dashboard-card grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="flex flex-col">
+                    <span class="text-label mb-6">AI Exercise Prescription</span>
+                    <div id="exerciseRec" class="flex-1 bg-blue-500/5 rounded-2xl p-5 border border-blue-500/10 text-xs leading-relaxed text-slate-300">
+                        <p class="text-slate-500 italic">분석 완료 시 맞춤형 트레이닝 루틴이 제안됩니다.</p>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-label mb-6">Nutrition & Bio-Recipe</span>
+                    <div id="nutritionRec" class="flex-1 bg-amber-500/5 rounded-2xl p-5 border border-amber-500/10 text-xs leading-relaxed text-slate-300">
+                        <p class="text-slate-500 italic">피지컬 향상을 위한 맞춤형 식단이 제안됩니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 </body>
 </html>
