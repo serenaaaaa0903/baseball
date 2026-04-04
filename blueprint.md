@@ -12,15 +12,18 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
 
 ## **3. Key Features**
 *   **Real-time AI Motion Analysis:** Using MediaPipe for skeletal tracking and pose estimation.
-*   **Interactive Scouting Report:** Dynamically generated PDF reports with performance grades and customized training prescriptions.
-*   **AI Director Chat:** Context-aware feedback system for direct communication with the AI analyzer.
-*   **Nutrition & Training Strategy:** AI-driven personalized meal plans and drills based on analysis results.
+*   **Tiered Access System:**
+    *   **Basic:** Core AI feedback, Director's chat, Ad-supported.
+    *   **Pro:** Adds Personalized Diet, Advanced Drills, and PDF Export.
+    *   **Super Pro:** Adds Performance Graph (Chart.js), Healthy Recipes, and Report Sharing.
+*   **Monetization:** Integrated Ad-slots for Basic users and Premium features for Pro/Super Pro tiers.
 
-## **4. Current Implementation Plan (UI Upgrade)**
-1.  **Core UI Refactoring:** Replace the existing structure with a more sophisticated Bento Grid layout.
-2.  **Hero Section Enhancement:** Implement a high-impact introduction area with kinetic typography.
-3.  **Enhanced Analytics Display:** Improve the visibility of real-time metrics (Torque, Stability) with modern gauges and charts.
-4.  **Mobile Optimization:** Ensure perfect responsiveness using CSS Container Queries and flexible grid systems.
+## **4. Current Implementation Plan (Monetization Update)**
+1.  **Tier Switcher Implementation:** A UI component to simulate/select user tiers (Basic/Pro/Super Pro).
+2.  **Feature Gate Logic:** JavaScript logic to enable/disable specific Bento cards and buttons based on the active tier.
+3.  **Ad Section Design:** A dedicated Bento card for advertisements, visible only to Basic users.
+4.  **Advanced Analytics (Super Pro):** Integration of `Chart.js` for daily score tracking.
+5.  **Recipe & Sharing Module:** Content sections for premium recipes and a mock link sharing system.
 
 ---
 
