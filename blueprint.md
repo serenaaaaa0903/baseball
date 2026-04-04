@@ -16,6 +16,9 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
     *   **Basic:** Video analysis, AI feedback, **Expert Director's Commentary (Non-duplicate)**, Ad-supported.
     *   **Pro:** Adds **Personalized Diet Plan**, **Pro-level Drills**, and **PDF Report Export**.
     *   **Super Pro:** Adds **Daily Performance Chart**, **Detailed Healthy Recipes**, and **Shareable Web Link**.
+*   **Viral Benefits (Free Pro Pass):**
+    *   **Invite Process:** Mobile number entry modal -> Link sharing -> **1-time Free Pro Pass** activation.
+    *   **Usage:** Automatically applies Pro analysis features to Basic users for one session, then reverts.
 *   **Ad & Social Proof:**
     *   **Review-based Ads:** Testimonials from diverse users (Age 18-50: Students, Clubs, Office workers).
 *   **Payment System:** Integrated checkout for seamless tier upgrades.
