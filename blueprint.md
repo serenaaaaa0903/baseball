@@ -16,6 +16,10 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
     *   **Basic:** Core AI feedback, Director's chat, Ad-supported.
     *   **Pro:** Adds Personalized Diet, Advanced Drills, and PDF Export.
     *   **Super Pro:** Adds Performance Graph (Chart.js), Healthy Recipes, and Report Sharing.
+*   **Payment System:** 
+    *   **Checkout Modal:** Professional credit card entry UI with plan selection.
+    *   **Simulated Processing:** Realistic loading states and success animations.
+    *   **Tier Activation:** Automatic account upgrade upon "successful" payment.
 *   **Monetization:** Integrated Ad-slots for Basic users and Premium features for Pro/Super Pro tiers.
 
 ## **4. Current Implementation Plan (Monetization Update)**
