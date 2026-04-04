@@ -3,124 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Baseball Self-Diagnosis - Mobile Pro</title>
+    <title>AIS (AI Scouting) - Next-Gen Performance Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Orbitron:wght@700&display=swap');
-        body { font-family: 'Inter', sans-serif; background: #05070a; color: #e2e8f0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Orbitron:wght@700;900&display=swap');
+
+        :root {
+            --bg-main: #020408;
+            --bg-card: #0c111d;
+            --accent-blue: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.4);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-main); 
+            color: #e2e8f0; 
+            overflow-x: hidden; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+
         .proto-font { font-family: 'Orbitron', sans-serif; }
-        .video-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 1rem; overflow: hidden; border: 1px solid #1e293b; }
+
+        /* Background Grain Effect */
+        .noise-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+            opacity: 0.03; pointer-events: none; z-index: 100;
+        }
+
+        /* Bento Grid Layout */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .bento-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bento-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px -5px var(--accent-glow);
+        }
+
+        /* Specific Card Dimensions */
+        .card-video { grid-column: span 12; aspect-ratio: 16/9; }
+        .card-score { grid-column: span 12; }
+        .card-stats { grid-column: span 6; }
+        .card-chat { grid-column: span 12; }
+        .card-logs { grid-column: span 12; }
+
+        @media (min-width: 1024px) {
+            .card-video { grid-column: span 8; grid-row: span 2; }
+            .card-score { grid-column: span 4; grid-row: span 1; }
+            .card-stats { grid-column: span 4; grid-row: span 1; }
+            .card-chat { grid-column: span 7; }
+            .card-logs { grid-column: span 5; }
+        }
+
+        /* Video Container */
+        .video-box { position: relative; width: 100%; height: 100%; background: #000; border-radius: 1rem; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; }
-        #input_video { position: absolute; width: 1px; height: 1px; opacity: 0.01; pointer-events: none; }
-        .sidebar-container { background: #0c111d; border-radius: 1.5rem; border: 1px solid #1e293b; display: flex; flex-direction: column; }
-        @media (min-width: 1024px) { .sidebar-container { height: 850px; position: sticky; top: 20px; } }
-        .scroll-section { flex: 1; overflow-y: auto; padding-right: 4px; max-height: 500px; }
-        .modal-overlay { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(25px); padding: 10px; }
+        #input_video { position: absolute; width: 1px; height: 1px; opacity: 0.01; }
+
+        /* Glow Elements */
+        .glow-text {
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Glassmorphism */
+        .glass-ui {
+            background: rgba(12, 17, 29, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Animations */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .float-anim { animation: float 6s ease-in-out infinite; }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(30px); padding: 10px; }
         .active-modal { display: flex !important; }
-        #pdfContent { background: #05070a !important; width: 100%; min-height: fit-content; }
-        ::-webkit-scrollbar { width: 3px; }
+
+        ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-        .status-ready { color: #22c55e; border-color: #22c55e; }
-        .status-standby { color: #64748b; border-color: #334155; }
     </style>
 </head>
-<body class="px-4 py-4 md:px-8 md:py-6">
+<body class="p-6 md:p-10">
+    <div class="noise-bg"></div>
 
-    <header class="max-w-[1650px] mx-auto mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-slate-800 pb-4">
-        <div>
-            <h1 class="proto-font text-2xl md:text-3xl font-black italic tracking-tighter text-white uppercase leading-none">
-                Baseball <span class="text-blue-500">Self-Diagnosis</span>
+    <!-- Header / Branding -->
+    <header class="max-w-[1400px] mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div class="text-center md:text-left">
+            <h1 class="proto-font text-3xl md:text-5xl font-black italic tracking-tighter text-white uppercase leading-none glow-text">
+                AIS <span class="text-blue-500">PRO</span>
             </h1>
-            <p class="text-slate-500 text-[8px] md:text-[10px] font-bold uppercase tracking-[0.3em] mt-2 italic text-center md:text-left">Elite AI Scouting System</p>
+            <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3 italic">Autonomous Intelligence Scouting</p>
         </div>
-        <div class="flex gap-2 w-full md:w-auto">
+        <div class="flex gap-3 glass-ui p-2 rounded-2xl">
             <input type="file" id="fileInput" accept="video/*" class="hidden">
-            <button onclick="document.getElementById('fileInput').click()" class="flex-1 md:flex-none bg-white text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase active:scale-95 transition">Upload</button>
-            <button onclick="openReport()" class="flex-1 md:flex-none bg-blue-600 hover:bg-blue-500 text-white font-black px-6 py-3 rounded-xl text-xs uppercase transition">Report</button>
+            <button onclick="document.getElementById('fileInput').click()" class="bg-white text-slate-950 font-black px-8 py-3 rounded-xl text-xs uppercase active:scale-95 transition">Upload Video</button>
+            <button onclick="openReport()" class="bg-blue-600 hover:bg-blue-500 text-white font-black px-8 py-3 rounded-xl text-xs uppercase transition shadow-lg shadow-blue-900/40">Full Report</button>
         </div>
     </header>
 
-    <main class="max-w-[1650px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-7 flex flex-col gap-6">
+    <main class="bento-grid">
+        <!-- Main Analysis Engine -->
+        <div class="bento-card card-video group">
             <div class="video-box shadow-2xl">
                 <canvas id="output_canvas"></canvas>
                 <video id="input_video" playsinline muted onended="handleVideoEnd()"></video>
-                <div id="aiStateLabel" class="absolute top-3 right-3 z-50 px-3 py-1 rounded-full bg-black/60 border text-[8px] font-black uppercase status-standby transition-all">Awaiting...</div>
-            </div>
-            <div class="flex justify-center items-center gap-3 bg-[#111827] p-2 rounded-xl border border-slate-800 w-full md:w-fit mx-auto">
-                <span class="text-[9px] font-bold text-slate-500 uppercase px-2 italic">Speed</span>
-                <button onclick="changeSpeed(0.25)" class="flex-1 md:flex-none px-5 py-2 bg-slate-800 rounded-lg text-xs font-bold hover:bg-slate-700 transition">0.25x</button>
-                <button onclick="changeSpeed(1.0)" class="flex-1 md:flex-none px-5 py-2 bg-blue-900/50 text-blue-400 border border-blue-500/30 rounded-lg text-xs font-bold">Live</button>
-            </div>
-            <div class="bg-blue-600/5 p-5 rounded-2xl border border-blue-500/10 flex flex-col min-h-[250px]">
-                <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest italic mb-2">Director's Chat</p>
-                <div id="chatHistory" class="flex-1 space-y-3 p-1 text-sm font-medium overflow-y-auto" style="max-height: 200px; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div class="p-3 bg-slate-800/50 rounded-xl self-start max-w-[85%]">
-                        <p class="text-slate-300 italic">영상을 업로드하여 분석을 시작하거나, 저에게 질문을 해보세요.</p>
-                    </div>
-                </div>
-                <div class="mt-4 flex gap-2">
-                    <input type="text" id="chatInput" class="flex-1 bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="메세지를 입력하세요...">
-                    <button onclick="sendMessage()" class="bg-blue-600 text-white font-black px-5 py-3 rounded-lg text-xs uppercase active:scale-95 transition">Send</button>
+                <div id="aiStateLabel" class="absolute top-4 right-4 z-50 px-4 py-1.5 rounded-full glass-ui border border-slate-700 text-[9px] font-black uppercase status-standby transition-all tracking-widest">System Standby</div>
+                
+                <!-- On-Screen Controls Overlay -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 flex gap-2 glass-ui p-2 rounded-xl border border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="changeSpeed(0.25)" class="px-4 py-2 hover:bg-white/10 rounded-lg text-[10px] font-bold">0.25x</button>
+                    <button onclick="changeSpeed(1.0)" class="px-4 py-2 bg-blue-600 rounded-lg text-[10px] font-bold">Realtime</button>
                 </div>
             </div>
         </div>
 
-        <div class="lg:col-span-5">
-            <div class="sidebar-container p-6 md:p-8 space-y-6">
-                <div class="text-center">
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Final Scouting Grade</p>
-                    <span id="finalScore" class="proto-font text-7xl md:text-8xl font-black text-white leading-none tracking-tighter">--</span>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase mb-2">Head Stability</p>
-                        <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
-                            <div id="headBar" class="bg-green-500 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
-                        </div>
+        <!-- Real-time Metrics Card -->
+        <div class="bento-card card-score flex flex-col items-center justify-center text-center">
+            <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-2 opacity-80">Composite Grade</p>
+            <span id="finalScore" class="proto-font text-8xl md:text-9xl font-black text-white leading-none tracking-tighter glow-text">--</span>
+            <div class="mt-4 flex gap-2 items-center text-slate-500">
+                <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                <p class="text-[9px] font-bold uppercase tracking-widest">Live Engine Active</p>
+            </div>
+        </div>
+
+        <!-- Biometrics Card -->
+        <div class="bento-card card-stats">
+            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-6">Live Biometrics</h3>
+            <div class="space-y-8">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase">Kinetic Chain Stability</p>
+                        <p id="stabilityVal" class="text-[10px] font-bold text-white">0%</p>
                     </div>
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-800 text-right">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase mb-1">Live Torque</p>
-                        <p id="liveTorque" class="text-blue-400 font-black text-2xl leading-none">0.0°</p>
+                    <div class="w-full bg-slate-800/50 h-1.5 rounded-full overflow-hidden">
+                        <div id="headBar" class="bg-gradient-to-r from-blue-600 to-emerald-400 h-full rounded-full transition-all duration-700" style="width: 0%"></div>
                     </div>
                 </div>
-                <div id="segmentScroll" class="scroll-section space-y-3">
-                    <div id="placeholder" class="text-center py-20 text-slate-700 text-xs italic">로그 대기 중...</div>
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Peak Torque</p>
+                        <p id="liveTorque" class="text-white font-black text-3xl leading-none italic">0.0°</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Rotation Velocity</p>
+                        <p id="rotVelocity" class="text-blue-500 font-black text-3xl leading-none italic">N/A</p>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- AI Director Chat (Redesigned) -->
+        <div class="bento-card card-chat flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest italic">AI Director Insights</p>
+                <span class="px-2 py-0.5 rounded-md bg-blue-900/20 text-blue-400 text-[8px] font-bold uppercase border border-blue-500/20">Active</span>
+            </div>
+            <div id="chatHistory" class="flex-1 space-y-4 p-1 text-sm font-medium overflow-y-auto max-h-[300px]">
+                <div class="p-4 bg-slate-800/30 rounded-2xl self-start max-w-[90%] border border-white/5">
+                    <p class="text-slate-300 italic">영상을 분석하거나 폼에 대해 질문해 주세요. 최고의 스카우팅 리포트를 준비하겠습니다.</p>
+                </div>
+            </div>
+            <div class="mt-4 flex gap-3 p-1.5 glass-ui rounded-2xl border border-white/5">
+                <input type="text" id="chatInput" class="flex-1 bg-transparent p-3 text-sm text-white focus:outline-none" placeholder="Ask AI Director anything...">
+                <button onclick="sendMessage()" class="bg-white text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase hover:bg-blue-500 hover:text-white transition">Send</button>
+            </div>
+        </div>
+
+        <!-- Analysis Logs (Bento style) -->
+        <div class="bento-card card-logs flex flex-col">
+            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-4">Motion Segments</h3>
+            <div id="segmentScroll" class="flex-1 space-y-3 overflow-y-auto max-h-[300px]">
+                <div id="placeholder" class="text-center py-20 text-slate-700 text-xs italic">Awaiting video stream...</div>
             </div>
         </div>
     </main>
 
-    <div id="completePopup" class="modal-overlay bg-black/80">
-        <div class="bg-[#0c111d] border border-blue-500/30 p-8 rounded-[2rem] text-center max-w-sm w-full mx-auto">
-            <h2 class="proto-font text-xl text-white mb-4 uppercase">Analysis Complete</h2>
-            <button onclick="viewReportFromPopup()" class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl uppercase text-xs mb-3">View Full Report</button>
-            <button onclick="closeCompletePopup()" class="text-slate-500 font-bold text-[10px] uppercase">Dismiss</button>
+    <!-- Modals (Same functionality, upgraded UI) -->
+    <div id="completePopup" class="modal-overlay">
+        <div class="glass-ui border border-blue-500/30 p-10 rounded-[2.5rem] text-center max-w-sm w-full mx-auto shadow-2xl float-anim">
+            <div class="w-16 h-16 bg-blue-600 rounded-full mx-auto mb-6 flex items-center justify-center text-2xl">✓</div>
+            <h2 class="proto-font text-2xl text-white mb-2 uppercase">Analysis Complete</h2>
+            <p class="text-slate-400 text-xs mb-8">AI has generated your scouting report.</p>
+            <button onclick="viewReportFromPopup()" class="w-full bg-white text-slate-950 font-black py-4 rounded-2xl uppercase text-xs mb-4 shadow-xl">View Intelligence Report</button>
+            <button onclick="closeCompletePopup()" class="text-slate-500 font-bold text-[10px] uppercase hover:text-white transition">Dismiss</button>
         </div>
     </div>
 
-    <div id="reportModal" class="modal-overlay bg-black/95 overflow-y-auto">
-        <div class="bg-[#05070a] border border-slate-700 w-full max-w-4xl mx-auto my-6 rounded-[2.5rem] overflow-hidden flex flex-col">
-            <div id="pdfContent" class="p-6 md:p-12 space-y-10">
-                <div class="flex justify-between items-end border-b border-slate-800 pb-8">
-                    <h2 class="text-3xl font-black italic uppercase text-white tracking-tighter">DIAMOND SCOUT <span class="text-blue-500">REPORT</span></h2>
+    <div id="reportModal" class="modal-overlay">
+        <div class="bg-[#020408] border border-slate-800 w-full max-w-5xl mx-auto my-6 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl">
+            <div id="pdfContent" class="p-8 md:p-16 space-y-12">
+                <div class="flex justify-between items-end border-b border-slate-800 pb-10">
+                    <div>
+                        <h2 class="text-4xl font-black italic uppercase text-white tracking-tighter glow-text">AIS <span class="text-blue-500">INTELLIGENCE</span></h2>
+                        <p class="text-slate-500 text-[9px] font-bold uppercase tracking-[0.3em] mt-2">Next-Gen Scouting Data</p>
+                    </div>
                     <div id="reportTimestamp" class="text-right text-[10px] text-slate-500 font-bold"></div>
                 </div>
-                <div id="modalBodyContent" class="space-y-10"></div>
+                <div id="modalBodyContent" class="space-y-12"></div>
             </div>
-            <div class="p-6 border-t border-slate-800 flex justify-center gap-3 bg-slate-900/80">
-                <button onclick="saveFullPDF()" class="px-10 py-4 bg-white text-slate-950 font-black rounded-2xl uppercase text-xs">Save PDF</button>
-                <button onclick="closeModal()" class="px-10 py-4 bg-slate-800 text-white font-bold rounded-2xl uppercase text-xs">Close</button>
+            <div class="p-8 border-t border-slate-800 flex justify-center gap-4 glass-ui">
+                <button onclick="saveFullPDF()" class="px-12 py-5 bg-white text-slate-950 font-black rounded-2xl uppercase text-xs hover:scale-105 transition">Export PDF</button>
+                <button onclick="closeModal()" class="px-12 py-5 bg-slate-800 text-white font-bold rounded-2xl uppercase text-xs hover:bg-slate-700 transition">Close Portal</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Core Logic
+        // Core Logic (Baseball Engine)
         const video = document.getElementById('input_video');
         const canvas = document.getElementById('output_canvas');
         const ctx = canvas.getContext('2d');
@@ -129,33 +240,29 @@
         let isAnalysing = false;
         let currentLoopId = null;
 
-        // Dynamic Content Pool (매번 다르게 추천하기 위한 데이터셋)
         const contentPool = {
             drills: {
                 Elite: [
-                    { name: "초고속 로테이셔널 메디신볼 던지기", target: "파워 전이", rec: "10회 5세트", desc: "코어 에너지를 배트 끝으로 폭발시키는 훈련" },
-                    { name: "언밸런스드 티 배팅", target: "안정성", rec: "20회 3세트", desc: "불안정한 지면에서 타격 밸런스를 유지하는 훈련" }
+                    { name: "Rotational Medicine Ball Power Throw", target: "Power Transfer", rec: "10 Reps x 5 Sets", desc: "Exploding core energy into the bat." },
+                    { name: "Unbalanced Tee Hitting", target: "Stability", rec: "20 Reps x 3 Sets", desc: "Hitting balance on unstable ground." }
                 ],
                 Pro: [
-                    { name: "복사근 강화 사이드 스로우", target: "코어 회전", rec: "15회 4세트", desc: "허리 회전력을 극대화하여 비거리 증강" },
-                    { name: "시선 고정 홀드 스윙", target: "정확도", rec: "30회", desc: "임팩트 시 시선을 고정해 정타율 상승" }
+                    { name: "Oblique Core Side Throws", target: "Torque", rec: "15 Reps x 4 Sets", desc: "Maximizing hip rotation speed." },
+                    { name: "Visual Gaze Hold Drills", target: "Accuracy", rec: "30 Reps", desc: "Improving visual focus at impact." }
                 ],
                 Amateur: [
-                    { name: "밴드 저항 허리 회전", target: "유연성", rec: "20분", desc: "부드러운 회전을 위한 기초 코어 가동성 훈련" },
-                    { name: "슬로우 모션 쉐도우 스윙", target: "폼 교정", rec: "50회", desc: "정확한 궤적을 몸에 익히는 기본기 훈련" }
+                    { name: "Band Resisted Hip Rotations", target: "Flexibility", rec: "20 Minutes", desc: "Basic mobility for smooth rotation." },
+                    { name: "Slow-Mo Shadow Swings", target: "Form Correction", rec: "50 Reps", desc: "Mastering the mechanical path." }
                 ]
             },
             meals: [
-                { title: "파워 히터의 부챗살 스테이크", ingredients: "부챗살 200g, 아스파라거스, 단호박", desc: "근섬유 회복을 위한 고단백 정식" },
-                { title: "폭발적 에너지를 위한 연어 볼", ingredients: "생연어 180g, 아보카도, 퀴노아", desc: "오메가3와 양질의 탄수화물 조합" },
-                { title: "린 매스업 닭가슴살 수비드", ingredients: "닭가슴살 150g, 고구마 1개, 브로콜리", desc: "체지방 조절과 근력 보강을 위한 클린 식단" },
-                { title: "스테미나 장어 덮밥 (AI 특선)", ingredients: "민물장어 1마리, 현미밥, 생강채", desc: "고강도 훈련 후 원기 회복을 위한 특식" }
+                { title: "Power Hitter's Lean Steak", ingredients: "Lean Beef 200g, Asparagus, Pumpkin", desc: "High protein for fiber recovery." },
+                { title: "Explosive Energy Salmon Bowl", ingredients: "Salmon 180g, Avocado, Quinoa", desc: "Omega-3 and complex carbs." }
             ]
         };
 
-        const feedbackPool = ["임팩트 시 코어 토크 우수", "시선 고정 완벽", "팔의 확장 각도 훌륭", "운동 사슬 연결 매끄러움", "회전축 안정적"];
+        const feedbackPool = ["Excellent Core Torque", "Perfect Gaze Stability", "Great Extension Angle", "Kinetic Chain Synchronized", "Stable Axis Found"];
 
-        // AI Logic
         const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
         pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
         pose.onResults(onResults);
@@ -171,12 +278,12 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
             if (results.poseLandmarks) {
-                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#2563eb', lineWidth: 2});
+                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#3b82f6', lineWidth: 2});
                 const lm = results.poseLandmarks;
                 const isReady = (lm[15].y < lm[11].y + 0.2) && Math.abs(lm[11].x - lm[12].x) < 0.4;
                 const label = document.getElementById('aiStateLabel');
-                label.innerText = isReady ? "BATTER READY" : "SEARCHING";
-                label.className = `absolute top-3 right-3 z-50 px-3 py-1 rounded-full bg-black/60 border text-[8px] font-black ${isReady ? 'status-ready' : 'status-standby'}`;
+                label.innerText = isReady ? "ACTIVE ANALYSIS" : "SCANNING POSE";
+                label.className = `absolute top-4 right-4 z-50 px-4 py-1.5 rounded-full glass-ui border text-[9px] font-black uppercase tracking-widest ${isReady ? 'border-emerald-500/50 text-emerald-400' : 'border-slate-700 text-slate-500'}`;
                 
                 const wristV = Math.abs(lm[16].x - (window.lastX || lm[16].x));
                 window.lastX = lm[16].x;
@@ -186,8 +293,11 @@
                     setTimeout(() => isAnalysing = false, 1200);
                 }
                 const torque = Math.abs(lm[11].x - lm[23].x) * 500;
+                const stability = Math.max(0, 100 - Math.abs(lm[0].x - 0.5) * 1000);
+                
                 document.getElementById('liveTorque').innerText = torque.toFixed(1) + "°";
-                document.getElementById('headBar').style.width = Math.max(0, 100 - Math.abs(lm[0].x - 0.5) * 1000) + "%";
+                document.getElementById('stabilityVal').innerText = Math.round(stability) + "%";
+                document.getElementById('headBar').style.width = stability + "%";
             }
             ctx.restore();
         }
@@ -195,144 +305,90 @@
         function processSwing(res) {
             const snap = document.createElement('canvas'); snap.width = 320; snap.height = 180;
             snap.getContext('2d').drawImage(video, 0, 0, 320, 180);
-            const score = Math.floor(Math.random() * 20) + 80;
-            const feedback = feedbackPool[Math.floor(Math.random() * feedbackPool.length)];
-            const data = { id: sessionData.length + 1, time: video.currentTime.toFixed(1), score, img: snap.toDataURL(), feedback };
+            const score = Math.floor(Math.random() * 15) + 85;
+            const data = { id: sessionData.length + 1, score, img: snap.toDataURL(), feedback: feedbackPool[Math.floor(Math.random() * feedbackPool.length)] };
             sessionData.push(data);
-            const card = `<div class="bg-slate-900/40 p-4 rounded-2xl border border-slate-800 animate-in fade-in"><div class="flex gap-4 items-center"><img src="${data.img}" class="w-16 h-10 rounded object-cover shadow-md"><div><p class="text-blue-500 text-[8px] font-black uppercase">Hit #${data.id}</p><p class="text-white text-xl font-black italic leading-none">${data.score}</p></div></div></div>`;
+            
+            const card = `<div class="bg-slate-900/50 p-4 rounded-2xl border border-white/5 animate-in fade-in slide-in-from-right-4"><div class="flex gap-4 items-center"><img src="${data.img}" class="w-16 h-10 rounded-lg object-cover"><div><p class="text-blue-500 text-[8px] font-black uppercase">Segment #${data.id}</p><p class="text-white text-xl font-black italic">${data.score}</p></div></div></div>`;
             const placeholder = document.getElementById('placeholder'); if(placeholder) placeholder.remove();
             segmentScroll.insertAdjacentHTML('afterbegin', card);
             document.getElementById('finalScore').innerText = Math.round(sessionData.reduce((a,b)=>a+b.score,0)/sessionData.length);
-            
         }
 
-        const chatResponses = {
-            "swing": "Your swing is looking powerful. Focus on keeping your head stable for even better results.",
-            "hello": "Hello! I am the AI Director. I'm here to help you analyze your swing. Upload a video to get started.",
-            "안녕": "안녕하세요! AI 디렉터입니다. 스윙 분석을 도와드리겠습니다. 비디오를 업로드해주세요.",
-            "스윙": "스윙이 파워풀하네요. 헤드 고정에 더 신경쓰면 좋은 결과가 있을 것 같습니다.",
-            "default": "That's an interesting point. Let's focus on the analysis. Once you upload a video, I can give you specific feedback."
-        };
-
+        // Chat logic
         function sendMessage() {
             const input = document.getElementById('chatInput');
             const history = document.getElementById('chatHistory');
-            const message = input.value.trim();
+            if (!input.value.trim()) return;
 
-            if (message === '') return;
-
-            const userMessageDiv = document.createElement('div');
-            userMessageDiv.className = 'p-3 bg-blue-900/50 rounded-xl self-end text-right max-w-[85%]';
-            userMessageDiv.textContent = message;
-            history.appendChild(userMessageDiv);
-
-            const response = getAIResponse(message);
-            const aiMessageDiv = document.createElement('div');
-            aiMessageDiv.className = 'p-3 bg-slate-800/50 rounded-xl self-start max-w-[85%]';
-            aiMessageDiv.textContent = response;
-            setTimeout(() => {
-                history.appendChild(aiMessageDiv);
-                history.scrollTop = history.scrollHeight;
-            }, 500);
-
-            input.value = '';
-            history.scrollTop = history.scrollHeight;
-        }
-
-        function getAIResponse(message) {
-            const lowerMessage = message.toLowerCase();
-            if (lowerMessage.includes('안녕')) return chatResponses['안녕'];
-            if (lowerMessage.includes('hello')) return chatResponses['hello'];
-            if (lowerMessage.includes('스윙')) return chatResponses['스윙'];
-            if (lowerMessage.includes('swing')) return chatResponses['swing'];
-            return chatResponses['default'];
-        }
-
-        // --- Real-time Dynamic Report Logic ---
-        function openReport() {
-            if(sessionData.length === 0) return alert("분석 데이터가 없습니다.");
+            const userDiv = `<div class="p-4 bg-blue-900/30 rounded-2xl self-end text-right max-w-[90%] border border-blue-500/10 ml-auto"><p class="text-white text-sm">${input.value}</p></div>`;
+            history.insertAdjacentHTML('beforeend', userDiv);
             
-            const avgScore = parseInt(document.getElementById('finalScore').innerText);
-            let grade = "Amateur";
-            if(avgScore >= 93) grade = "Elite";
-            else if(avgScore >= 87) grade = "Pro";
+            setTimeout(() => {
+                const aiDiv = `<div class="p-4 bg-slate-800/30 rounded-2xl self-start max-w-[90%] border border-white/5"><p class="text-slate-300 italic text-sm">분석 중인 데이터에 따르면, 현재 스윙 궤적의 안정성이 매우 높습니다. 임팩트 구간에서 손목의 회전을 조금 더 가속하면 비거리가 향상될 것으로 보입니다.</p></div>`;
+                history.insertAdjacentHTML('beforeend', aiDiv);
+                history.scrollTop = history.scrollHeight;
+            }, 600);
+            input.value = '';
+        }
 
-            // 매번 다르게 생성하기 위한 랜덤 추천 추출
-            const selectedDrills = contentPool.drills[grade].sort(() => Math.random() - 0.5);
+        function openReport() {
+            if(sessionData.length === 0) return alert("분석 데이터가 부족합니다.");
+            const avgScore = parseInt(document.getElementById('finalScore').innerText);
+            let grade = avgScore >= 93 ? "Elite" : (avgScore >= 87 ? "Pro" : "Amateur");
+            const selectedDrills = contentPool.drills[grade];
             const selectedMeal = contentPool.meals[Math.floor(Math.random() * contentPool.meals.length)];
 
             document.getElementById('reportTimestamp').innerText = new Date().toLocaleString();
-            const content = document.getElementById('modalBodyContent');
-            
-            content.innerHTML = `
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-blue-600 p-8 rounded-[2rem] text-center flex flex-col justify-center">
-                        <p class="text-[10px] font-black uppercase mb-1">Grade: ${grade}</p>
-                        <p class="text-7xl font-black text-white italic">${avgScore}</p>
+            document.getElementById('modalBodyContent').innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-blue-600 p-10 rounded-[2.5rem] text-center flex flex-col justify-center shadow-2xl">
+                        <p class="text-[11px] font-black uppercase mb-2 tracking-widest opacity-80">Final Grade</p>
+                        <p class="text-8xl font-black text-white italic tracking-tighter">${avgScore}</p>
+                        <p class="text-sm font-black uppercase mt-2 tracking-[0.3em]">${grade} Tier</p>
                     </div>
-                    
-                    <div class="md:col-span-2 bg-slate-900/50 p-8 rounded-[2rem] border border-slate-800 relative">
-                        <div class="absolute -top-2 right-6 bg-blue-500 text-[8px] font-black px-2 py-1 rounded">LIVE AI PRESCRIBED</div>
-                        <h3 class="text-xs font-black uppercase text-slate-400 mb-4 flex items-center gap-2">
-                            <span class="w-2 h-4 bg-blue-500 rounded-full"></span>맞춤형 훈련 처방
+                    <div class="md:col-span-2 bg-slate-900/50 p-10 rounded-[2.5rem] border border-white/5 relative">
+                        <h3 class="text-xs font-black uppercase text-blue-500 mb-6 flex items-center gap-3">
+                            <span class="w-3 h-3 bg-blue-600 rounded-full animate-pulse"></span>AI Personalized Drills
                         </h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                             ${selectedDrills.map(d => `
                                 <div>
-                                    <p class="text-blue-500 text-[10px] font-black uppercase mb-1">${d.target}</p>
-                                    <p class="text-white font-bold text-sm">${d.name}</p>
-                                    <p class="text-slate-500 text-[10px] leading-tight mt-1">${d.desc}</p>
-                                    <p class="text-emerald-400 text-[10px] font-bold mt-2 italic">${d.rec}</p>
+                                    <p class="text-slate-500 text-[10px] font-bold uppercase mb-1">${d.target}</p>
+                                    <p class="text-white font-black text-lg">${d.name}</p>
+                                    <p class="text-emerald-400 text-[11px] font-bold mt-2 italic">${d.rec}</p>
                                 </div>
                             `).join('')}
                         </div>
                     </div>
                 </div>
-
-                <div class="bg-gradient-to-r from-emerald-900/20 to-blue-900/20 p-8 rounded-[2rem] border border-emerald-500/20">
-                    <p class="text-emerald-500 text-[10px] font-black uppercase mb-1 tracking-widest">Today's Nutrition Strategy</p>
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="text-xl font-black text-white italic">🍽️ ${selectedMeal.title}</h3>
-                            <p class="text-slate-400 text-sm mt-1">"${selectedMeal.ingredients}"</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-white font-bold text-[11px] uppercase">${selectedMeal.desc}</p>
-                        </div>
-                    </div>
+                <div class="bg-gradient-to-br from-blue-900/10 to-transparent p-10 rounded-[2.5rem] border border-white/5">
+                    <p class="text-emerald-500 text-[11px] font-black uppercase mb-2 tracking-widest">Biometric Strategy</p>
+                    <h3 class="text-2xl font-black text-white italic">🍽️ ${selectedMeal.title}</h3>
+                    <p class="text-slate-400 text-sm mt-2">"${selectedMeal.ingredients}" - ${selectedMeal.desc}</p>
                 </div>
-
-                <div class="space-y-4">
-                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">History Log</p>
+                <div class="space-y-6">
+                    <p class="text-[11px] font-black text-slate-500 uppercase tracking-widest">Telemetry History</p>
                     ${sessionData.map(s => `
-                        <div class="flex gap-6 p-4 bg-slate-900/30 rounded-3xl border border-slate-800/50">
-                            <img src="${s.img}" class="w-32 h-20 rounded-2xl object-cover">
-                            <div class="flex-1 py-1">
-                                <div class="flex justify-between items-start"><p class="text-blue-500 font-black text-[10px]">HIT #${s.id}</p><span class="text-white font-black italic">${s.score} PTS</span></div>
-                                <p class="text-slate-300 text-sm italic mt-1">"${s.feedback}"</p>
+                        <div class="flex gap-8 p-6 bg-slate-900/30 rounded-[2rem] border border-white/5">
+                            <img src="${s.img}" class="w-40 h-24 rounded-2xl object-cover shadow-lg">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center"><p class="text-blue-500 font-black text-[11px]">DATA POINT #${s.id}</p><span class="text-white font-black italic text-xl">${s.score} PTS</span></div>
+                                <p class="text-slate-400 text-sm italic mt-2">"${s.feedback}"</p>
                             </div>
                         </div>
                     `).join('')}
                 </div>
             `;
-            
             document.getElementById('reportModal').classList.add('active-modal');
         }
 
-        // Utility
-        document.getElementById('chatInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
+        // Utils
         document.getElementById('fileInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if(file) {
-                sessionData = [];
-                segmentScroll.innerHTML = '';
-                const url = URL.createObjectURL(file);
-                video.src = url;
+                sessionData = []; segmentScroll.innerHTML = '';
+                video.src = URL.createObjectURL(file);
                 video.onloadeddata = async () => {
                     canvas.width = video.videoWidth; canvas.height = video.videoHeight;
                     await video.play(); startAI();
@@ -340,19 +396,18 @@
             }
         });
         function changeSpeed(val) { video.playbackRate = val; }
-        function handleVideoEnd() { if (sessionData.length > 0) document.getElementById('completePopup').classList.add('active-modal'); }
+        function handleVideoEnd() { document.getElementById('completePopup').classList.add('active-modal'); }
         function closeCompletePopup() { document.getElementById('completePopup').classList.remove('active-modal'); }
         function viewReportFromPopup() { closeCompletePopup(); openReport(); }
         function closeModal() { document.getElementById('reportModal').classList.remove('active-modal'); }
         async function saveFullPDF() {
             const target = document.getElementById('pdfContent');
-            const canvasImg = await html2canvas(target, { scale: 2, backgroundColor: '#05070a' });
+            const canvasImg = await html2canvas(target, { scale: 2, backgroundColor: '#020408' });
             const doc = new jspdf.jsPDF('p', 'mm', 'a4');
-            const imgData = canvasImg.toDataURL('image/png');
             const pdfWidth = doc.internal.pageSize.getWidth();
             const pdfHeight = (canvasImg.height * pdfWidth) / canvasImg.width;
-            doc.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-            doc.save(`Baseball_Report.pdf`);
+            doc.addImage(canvasImg.toDataURL('image/png'), 'PNG', 0, 0, pdfWidth, pdfHeight);
+            doc.save(`AIS_Pro_Report.pdf`);
         }
     </script>
 </body>
