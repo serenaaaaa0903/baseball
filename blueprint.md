@@ -13,14 +13,12 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
 ## **3. Key Features**
 *   **Real-time AI Motion Analysis:** Using MediaPipe for skeletal tracking and pose estimation.
 *   **Tiered Access System:**
-    *   **Basic:** Core AI feedback, Director's chat, Ad-supported.
-    *   **Pro:** Adds Personalized Diet, Advanced Drills, and PDF Export.
-    *   **Super Pro:** Adds Performance Graph (Chart.js), Healthy Recipes, and Report Sharing.
-*   **Payment System:** 
-    *   **Checkout Modal:** Professional credit card entry UI with plan selection.
-    *   **Simulated Processing:** Realistic loading states and success animations.
-    *   **Tier Activation:** Automatic account upgrade upon "successful" payment.
-*   **Monetization:** Integrated Ad-slots for Basic users and Premium features for Pro/Super Pro tiers.
+    *   **Basic:** Video analysis, AI feedback, **Expert Director's Commentary (Non-duplicate)**, Ad-supported.
+    *   **Pro:** Adds **Personalized Diet Plan**, **Pro-level Drills**, and **PDF Report Export**.
+    *   **Super Pro:** Adds **Daily Performance Chart**, **Detailed Healthy Recipes**, and **Shareable Web Link**.
+*   **Ad & Social Proof:**
+    *   **Review-based Ads:** Testimonials from diverse users (Age 18-50: Students, Clubs, Office workers).
+*   **Payment System:** Integrated checkout for seamless tier upgrades.
 
 ## **4. Current Implementation Plan (Monetization Update)**
 1.  **Tier Switcher Implementation:** A UI component to simulate/select user tiers (Basic/Pro/Super Pro).

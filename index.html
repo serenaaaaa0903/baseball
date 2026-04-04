@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AIS (AI Scouting) - Premium Performance</title>
+    <title>AIS (AI Scouting) - Next-Gen Performance Analytics</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
@@ -30,8 +30,8 @@
         
         .card-video { grid-column: span 12; aspect-ratio: 16/9; }
         .card-score { grid-column: span 12; }
-        .card-stats { grid-column: span 6; }
-        .card-ads { grid-column: span 6; background: linear-gradient(135deg, #1e293b, #0f172a); }
+        .card-stats { grid-column: span 12; }
+        .card-ads { grid-column: span 12; background: linear-gradient(135deg, #0f172a, #020617); }
         .card-chat { grid-column: span 12; }
         .card-premium { grid-column: span 12; }
 
@@ -54,9 +54,13 @@
         .locked-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; border-radius: 1.5rem; text-align: center; padding: 1rem; }
         .premium-text { color: var(--gold-premium); font-weight: 900; text-transform: uppercase; font-size: 10px; letter-spacing: 0.2em; }
         
-        /* Payment Card UI */
         .card-entry { background: #1a1a1a; border: 1px solid #333; padding: 1rem; border-radius: 0.75rem; width: 100%; }
         .card-entry input { background: transparent; border: none; color: white; width: 100%; font-size: 14px; outline: none; }
+
+        /* Review Slider Animation */
+        @keyframes scrollReview { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+        .review-track { animation: scrollReview 20s linear infinite; }
+        .review-track:hover { animation-play-state: paused; }
     </style>
 </head>
 <body class="p-6 md:p-10">
@@ -86,7 +90,7 @@
             </div>
         </div>
 
-        <div class="bento-card card-score flex flex-col items-center justify-center">
+        <div class="bento-card card-score flex flex-col items-center justify-center text-center">
             <p class="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-2">Analysis Score</p>
             <span id="finalScore" class="proto-font text-8xl font-black text-white leading-none tracking-tighter">--</span>
         </div>
@@ -109,12 +113,17 @@
             </div>
         </div>
 
-        <div class="bento-card card-ads flex flex-col items-center justify-center text-center p-8 border-dashed border-slate-700" id="card-ads">
-            <p class="text-[8px] font-bold text-slate-600 uppercase tracking-[0.5em] mb-4">Advertisement</p>
-            <div class="w-full aspect-video bg-slate-900/80 rounded-xl flex items-center justify-center mb-4">
-                <p class="text-slate-500 text-[10px] italic">Sponsored Slot</p>
+        <!-- Ad Section with Reviews (Target: 18-50, Diverse Backgrounds) -->
+        <div class="bento-card card-ads flex flex-col overflow-hidden h-[350px]">
+            <p class="text-[8px] font-bold text-blue-500 uppercase tracking-[0.5em] mb-6">User Testimonials</p>
+            <div class="flex-1 relative overflow-hidden">
+                <div class="review-track space-y-4" id="reviewContainer">
+                    <!-- Reviews will be injected here -->
+                </div>
             </div>
-            <p class="text-[9px] text-slate-400">Upgrade to remove ads</p>
+            <div class="mt-4 pt-4 border-t border-white/5 text-center">
+                <p class="text-[9px] text-slate-500 italic">"Join 50,000+ athletes across all ages."</p>
+            </div>
         </div>
 
         <div class="bento-card card-premium" id="card-graph">
@@ -128,14 +137,14 @@
         </div>
 
         <div class="bento-card card-chat flex flex-col">
-            <h3 class="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-4 italic">Director's Chat</h3>
-            <div id="chatHistory" class="flex-1 space-y-4 overflow-y-auto max-h-[250px] mb-4">
+            <h3 class="text-[11px] font-black text-blue-500 uppercase tracking-widest mb-4 italic">Director's Real-time Feedback</h3>
+            <div id="chatHistory" class="flex-1 space-y-4 overflow-y-auto max-h-[250px] mb-4 p-2">
                 <div class="p-4 bg-slate-800/30 rounded-2xl border border-white/5">
-                    <p class="text-slate-300 italic text-sm">기본 피드백을 제공합니다.</p>
+                    <p class="text-slate-300 italic text-sm">기본 피드백을 실시간으로 제공합니다. 중복 없는 고유 분석이 시작됩니다.</p>
                 </div>
             </div>
             <div class="flex gap-2 glass-ui p-1.5 rounded-2xl">
-                <input type="text" id="chatInput" class="flex-1 bg-transparent p-3 text-sm text-white focus:outline-none" placeholder="Ask...">
+                <input type="text" id="chatInput" class="flex-1 bg-transparent p-3 text-sm text-white focus:outline-none" placeholder="Ask Director...">
                 <button onclick="sendMessage()" class="bg-white text-slate-950 font-black px-6 py-3 rounded-xl text-xs uppercase">Send</button>
             </div>
         </div>
@@ -171,14 +180,12 @@
                 <button onclick="closeCheckout()" class="w-full py-4 text-slate-500 font-bold text-[10px] uppercase mt-4">Cancel</button>
             </div>
 
-            <!-- Loading State -->
             <div id="paymentLoading" class="hidden absolute inset-0 bg-[#0c111d] flex flex-col items-center justify-center p-8 text-center z-[110]">
                 <div class="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
                 <p class="text-white font-black text-lg uppercase mb-2">Processing</p>
                 <p class="text-slate-500 text-xs">Securing your premium scouting tunnel...</p>
             </div>
 
-            <!-- Success State -->
             <div id="paymentSuccess" class="hidden absolute inset-0 bg-[#0c111d] flex flex-col items-center justify-center p-8 text-center z-[120]">
                 <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6">✓</div>
                 <p class="text-white font-black text-2xl uppercase mb-2">Success!</p>
@@ -191,7 +198,7 @@
     <!-- Report Modal -->
     <div id="reportModal" class="modal-overlay">
         <div class="bg-[#020408] border border-slate-800 w-full max-w-5xl mx-auto rounded-[3rem] h-[90vh] flex flex-col shadow-2xl relative">
-            <div id="pdfContent" class="flex-1 overflow-y-auto p-10 md:p-16 space-y-12">
+            <div id="pdfContent" class="flex-1 overflow-y-auto p-10 md:p-16 space-y-12 bg-[#020408]">
                 <div class="flex justify-between items-end border-b border-slate-800 pb-10">
                     <h2 class="proto-font text-4xl font-black italic uppercase text-white tracking-tighter">AIS <span class="text-blue-500">INTELLIGENCE</span></h2>
                     <div id="tierBadge" class="px-4 py-1.5 rounded-full bg-slate-800 text-[10px] font-black uppercase text-white tracking-widest">Basic User</div>
@@ -230,45 +237,68 @@
         const canvas = document.getElementById('output_canvas');
         const ctx = canvas.getContext('2d');
 
+        // Review Content Data (Age 18-50, Diverse Backgrounds)
+        const reviews = [
+            { name: "김*우 (18세, 학생)", text: "매일 스윙 연습하는데 AI가 각도 다 잡아줘서 너무 편해요!", job: "High School Athlete" },
+            { name: "이*민 (24세, 대학생)", text: "동아리 친구들과 내기할 때 이 앱 점수로 판가름합니다. 진짜 정확해요.", job: "Univ. Baseball Club" },
+            { name: "박*준 (32세, 직장인)", text: "사회인 야구 3년차인데, 감독 코멘트 덕분에 타율이 2할대에서 3할로 올랐습니다.", job: "Amateur League" },
+            { name: "최*성 (45세, 직장인)", text: "주말 취미로 야구하는데, 무리하지 않게 폼을 교정해줘서 부상이 없네요.", job: "Weekend Hobbyist" },
+            { name: "정*희 (21세, 대학생)", text: "데이터로 분석하니까 제가 뭘 잘못하는지 바로 알겠더라고요. 강추!", job: "Univ. Student" },
+            { name: "강*호 (50세, 동호회장)", text: "우리 팀원들 다 이거 씁니다. 일자별 성적 그래프 보는 재미가 쏠쏠해요.", job: "Club Leader" }
+        ];
+
+        function initReviews() {
+            const container = document.getElementById('reviewContainer');
+            const doubleReviews = [...reviews, ...reviews]; // For seamless scroll
+            container.innerHTML = doubleReviews.map(r => `
+                <div class="p-4 bg-slate-900/50 rounded-xl border border-white/5">
+                    <div class="flex justify-between items-start mb-1">
+                        <p class="text-white font-bold text-[10px]">${r.name}</p>
+                        <span class="text-[8px] bg-blue-900/30 text-blue-400 px-1.5 py-0.5 rounded uppercase font-bold">${r.job}</span>
+                    </div>
+                    <p class="text-slate-400 text-[10px] italic leading-relaxed">"${r.text}"</p>
+                </div>
+            `).join('');
+        }
+        initReviews();
+
+        // Director's Feedback Logic (Non-duplicate)
+        const directorFeedbacks = [
+            "임팩트 시 손목의 회전 가속도가 매우 훌륭합니다. 지금처럼 유지하세요.",
+            "팔로스루 시 시선이 너무 일찍 돌아갑니다. 공을 끝까지 보는 훈련이 필요해요.",
+            "하체의 지지력이 안정적입니다. 코어 에너지가 배트 끝까지 잘 전달되고 있네요.",
+            "백스윙 궤적이 조금 큽니다. 간결하게 나오도록 신경 써보세요.",
+            "어깨가 타격 시 일찍 열리는 경향이 있습니다. 벽을 친다는 느낌으로 닫아주세요.",
+            "전체적인 운동 사슬(Kinetic Chain)의 연결이 아주 매끄럽습니다. 프로급 폼입니다.",
+            "타격 포인트가 약간 뒤에 형성됩니다. 반 박자 빠르게 타이밍을 가져가보세요.",
+            "피니시 자세에서 밸런스가 흐트러집니다. 코어의 버티는 힘을 강화하세요."
+        ];
+        let availableFeedbacks = [...directorFeedbacks];
+
+        function getUniqueFeedback() {
+            if (availableFeedbacks.length === 0) availableFeedbacks = [...directorFeedbacks];
+            const randomIndex = Math.floor(Math.random() * availableFeedbacks.length);
+            return availableFeedbacks.splice(randomIndex, 1)[0];
+        }
+
         // Payment Logic
-        function openCheckout(plan = 'pro') {
-            document.getElementById('checkoutModal').classList.add('active-modal');
-            selectPlan(plan);
-        }
-
-        function closeCheckout() {
-            document.getElementById('checkoutModal').classList.remove('active-modal');
-            document.getElementById('paymentLoading').classList.add('hidden');
-            document.getElementById('paymentSuccess').classList.add('hidden');
-        }
-
+        function openCheckout(plan = 'pro') { document.getElementById('checkoutModal').classList.add('active-modal'); selectPlan(plan); }
+        function closeCheckout() { document.getElementById('checkoutModal').classList.remove('active-modal'); document.getElementById('paymentLoading').classList.add('hidden'); document.getElementById('paymentSuccess').classList.add('hidden'); }
         function selectPlan(plan) {
             selectedPlan = plan;
             document.getElementById('plan-pro').className = plan === 'pro' ? 'flex-1 p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 text-center cursor-pointer transition' : 'flex-1 p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-center cursor-pointer transition';
             document.getElementById('plan-super').className = plan === 'super' ? 'flex-1 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-center cursor-pointer transition' : 'flex-1 p-4 rounded-xl border border-slate-800 bg-slate-900/50 text-center cursor-pointer transition';
         }
-
         function processPayment() {
             document.getElementById('paymentLoading').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('paymentLoading').classList.add('hidden');
-                document.getElementById('paymentSuccess').classList.remove('hidden');
-                document.getElementById('successPlan').innerText = selectedPlan.toUpperCase();
-            }, 2000);
+            setTimeout(() => { document.getElementById('paymentLoading').classList.add('hidden'); document.getElementById('paymentSuccess').classList.remove('hidden'); document.getElementById('successPlan').innerText = selectedPlan.toUpperCase(); }, 2000);
         }
-
-        function finalizeUpgrade() {
-            setTier(selectedPlan);
-            closeCheckout();
-        }
-
+        function finalizeUpgrade() { setTier(selectedPlan); closeCheckout(); }
         function setTier(tier) {
             currentTier = tier;
             document.getElementById('gate-graph').classList.toggle('hidden', tier === 'super');
-            document.getElementById('card-ads').classList.toggle('hidden', tier !== 'basic');
             updateModalGates();
         }
-
         function updateModalGates() {
             const isPro = currentTier === 'pro' || currentTier === 'super';
             const isSuper = currentTier === 'super';
@@ -297,8 +327,8 @@
                 drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#3b82f6', lineWidth: 2});
                 const lm = results.poseLandmarks;
                 const isReady = (lm[15].y < lm[11].y + 0.2);
-                document.getElementById('aiStateLabel').innerText = isReady ? "ACTIVE" : "READY";
-                if(isReady && Math.random() > 0.98) { document.getElementById('finalScore').innerText = Math.floor(Math.random()*10)+85; sessionData.push({s:90}); }
+                document.getElementById('aiStateLabel').innerText = isReady ? "ANALYZING" : "SCANNING";
+                if(isReady && Math.random() > 0.99 && sessionData.length < 10) processSwing();
                 document.getElementById('liveTorque').innerText = (Math.abs(lm[11].x - lm[23].x)*500).toFixed(1) + "°";
                 document.getElementById('headBar').style.width = Math.max(0, 100 - Math.abs(lm[0].x - 0.5)*1000) + "%";
             }
@@ -307,11 +337,26 @@
 
         async function startAI() { if(!video.paused) { await pose.send({image: video}); requestAnimationFrame(startAI); } }
 
+        function processSwing() {
+            const score = Math.floor(Math.random()*10)+85;
+            document.getElementById('finalScore').innerText = score;
+            const history = document.getElementById('chatHistory');
+            const feedback = getUniqueFeedback();
+            history.insertAdjacentHTML('afterbegin', `
+                <div class="p-4 bg-blue-900/10 rounded-2xl border border-blue-500/20 animate-in fade-in slide-in-from-top-4">
+                    <p class="text-blue-500 text-[8px] font-black uppercase mb-1">Director Analysis</p>
+                    <p class="text-white text-xs leading-relaxed italic">"${feedback}"</p>
+                    <p class="text-slate-500 text-[8px] mt-2 font-bold">${new Date().toLocaleTimeString()}</p>
+                </div>
+            `);
+            sessionData.push({s: score, f: feedback});
+        }
+
         function openReport() {
             if(sessionData.length === 0 && currentTier === 'basic') return alert("데이터가 부족합니다.");
             document.getElementById('modalBodyContent').innerHTML = `<div class="bg-blue-600 p-10 rounded-[2.5rem] text-center"><p class="text-8xl font-black italic">92</p></div>`;
-            document.getElementById('dietData').innerHTML = `<p class="text-slate-400 text-xs">고단백 식단과 메디신볼 훈련을 병행하세요.</p>`;
-            document.getElementById('recipeData').innerHTML = `<p class="text-slate-400 text-xs">연어 아보카도 샐러드 레시피가 준비되었습니다.</p>`;
+            document.getElementById('dietData').innerHTML = `<p class="text-slate-400 text-xs">상세 식단 정보가 활성화되었습니다.</p>`;
+            document.getElementById('recipeData').innerHTML = `<p class="text-slate-400 text-xs">슈퍼 프로 레시피가 준비되었습니다.</p>`;
             updateModalGates();
             document.getElementById('reportModal').classList.add('active-modal');
         }
@@ -319,7 +364,7 @@
         function closeModal() { document.getElementById('reportModal').classList.remove('active-modal'); }
         async function saveFullPDF() { if(currentTier === 'basic') return alert("Upgrade to PRO"); const target = document.getElementById('pdfContent'); const canvasImg = await html2canvas(target, { scale: 2, backgroundColor: '#020408' }); const doc = new jspdf.jsPDF('p', 'mm', 'a4'); doc.addImage(canvasImg.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvasImg.height*210)/canvasImg.width); doc.save(`AIS_Report.pdf`); }
         document.getElementById('fileInput').addEventListener('change', e => { video.src = URL.createObjectURL(e.target.files[0]); video.onloadeddata = () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; video.play(); startAI(); }; });
-        function sendMessage() { const input = document.getElementById('chatInput'); if(!input.value) return; const history = document.getElementById('chatHistory'); history.insertAdjacentHTML('beforeend', `<div class="p-4 bg-blue-900/30 rounded-2xl ml-auto max-w-[90%]"><p class="text-white text-xs">${input.value}</p></div>`); input.value = ''; setTimeout(() => { history.insertAdjacentHTML('beforeend', `<div class="p-4 bg-slate-800/30 rounded-2xl max-w-[90%]"><p class="text-slate-300 italic text-xs">훌륭한 스윙입니다!</p></div>`); history.scrollTop = history.scrollHeight; }, 600); }
+        function sendMessage() { const input = document.getElementById('chatInput'); if(!input.value) return; const history = document.getElementById('chatHistory'); history.insertAdjacentHTML('afterbegin', `<div class="p-4 bg-slate-800/30 rounded-2xl ml-auto max-w-[90%]"><p class="text-white text-xs">${input.value}</p></div>`); input.value = ''; }
     </script>
 </body>
 </html>
