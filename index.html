@@ -65,16 +65,27 @@
                 <!-- Kinematic Sequence -->
                 <div class="dashboard-card flex flex-col">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-label">Kinematic Sequence Analytics</span>
+                        <div class="flex items-center gap-4">
+                            <span class="text-label">Kinematic Sequence Analytics</span>
+                            <label class="switch">
+                                <input type="checkbox" id="kinematicToggle" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                         <div class="flex gap-2">
-                            <span class="text-[8px] text-blue-500 font-bold uppercase tracking-widest">• Pelvis</span>
-                            <span class="text-[8px] text-emerald-500 font-bold uppercase tracking-widest">• Torso</span>
-                            <span class="text-[8px] text-amber-500 font-bold uppercase tracking-widest">• Arm</span>
-                            <span class="text-[8px] text-rose-500 font-bold uppercase tracking-widest">• Hand</span>
+                            <span class="text-[8px] neon-cyan font-bold uppercase tracking-widest">• Pelvis</span>
+                            <span class="text-[8px] neon-green font-bold uppercase tracking-widest">• Torso</span>
+                            <span class="text-[8px] neon-amber font-bold uppercase tracking-widest">• Arm</span>
+                            <span class="text-[8px] neon-rose font-bold uppercase tracking-widest">• Hand</span>
                         </div>
                     </div>
-                    <div class="h-[120px] w-full">
+                    <div class="h-[120px] w-full mb-4">
                         <canvas id="sequenceChart"></canvas>
+                    </div>
+                    <!-- Kinematic Insights Section -->
+                    <div id="kinematicInsights" class="bg-blue-500/5 rounded-xl p-3 border border-blue-500/10">
+                        <span class="text-[8px] font-black text-blue-500 uppercase mb-2 block">Professional Sequence Analysis</span>
+                        <p id="kinematicStatusText" class="text-[10px] text-slate-400 italic">에너지 전달 시퀀스 추적 중...</p>
                     </div>
                 </div>
 

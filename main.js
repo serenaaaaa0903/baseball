@@ -1,6 +1,6 @@
 /**
  * AIS Diagnostics - Main Engine
- * High-tech AI sports analytics dashboard logic with Real-time Kinematic Sequence.
+ * High-tech AI sports analytics dashboard logic with Professional Kinematic Analysis.
  */
 
 // --- Web Components ---
@@ -87,15 +87,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const inputVideo = document.getElementById('input_video');
     const outputCanvas = document.getElementById('output_canvas');
     const ctx = outputCanvas.getContext('2d');
+    const kinematicToggle = document.getElementById('kinematicToggle');
+    const kinematicStatusText = document.getElementById('kinematicStatusText');
 
     let sequenceChart;
+    let isKinematicEnabled = true;
+
     const chartData = {
         labels: Array(50).fill(''),
         datasets: [
-            { label: 'Pelvis', data: Array(50).fill(0), borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0 },
-            { label: 'Torso', data: Array(50).fill(0), borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0 },
-            { label: 'Arm', data: Array(50).fill(0), borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, pointRadius: 0 },
-            { label: 'Hand', data: Array(50).fill(0), borderColor: '#f43f5e', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+            { label: 'Pelvis', data: Array(50).fill(0), borderColor: '#00ffff', borderWidth: 3, tension: 0.4, pointRadius: 0, shadowBlur: 10, shadowColor: '#00ffff' },
+            { label: 'Torso', data: Array(50).fill(0), borderColor: '#39ff14', borderWidth: 3, tension: 0.4, pointRadius: 0, shadowBlur: 10, shadowColor: '#39ff14' },
+            { label: 'Arm', data: Array(50).fill(0), borderColor: '#ffcc33', borderWidth: 3, tension: 0.4, pointRadius: 0, shadowBlur: 10, shadowColor: '#ffcc33' },
+            { label: 'Hand', data: Array(50).fill(0), borderColor: '#ff007f', borderWidth: 3, tension: 0.4, pointRadius: 0, shadowBlur: 10, shadowColor: '#ff007f' }
         ]
     };
 
@@ -112,13 +116,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     x: { display: false },
                     y: { 
                         display: true, 
-                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        grid: { color: 'rgba(255,255,255,0.02)' },
                         ticks: { color: '#64748b', font: { size: 8 } },
                         min: 0, max: 100
                     }
                 },
-                plugins: { legend: { display: false } }
-            }
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { enabled: false }
+                }
+            },
+            plugins: [{
+                beforeDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    chart.data.datasets.forEach((dataset, i) => {
+                        ctx.save();
+                        ctx.shadowBlur = dataset.shadowBlur;
+                        ctx.shadowColor = dataset.shadowColor;
+                    });
+                },
+                afterDraw: (chart) => { chart.ctx.restore(); }
+            }]
         });
     }
 
@@ -140,37 +158,50 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
         
         if (results.poseLandmarks) {
-            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(255,255,255,0.2)', lineWidth: 2 });
-            drawLandmarks(ctx, results.poseLandmarks, { color: '#3b82f6', lineWidth: 1, radius: 2 });
+            // Neon Skeleton
+            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(59, 130, 246, 0.4)', lineWidth: 3 });
+            drawLandmarks(ctx, results.poseLandmarks, { color: '#fff', lineWidth: 1, radius: 2 });
             
-            analyzeKinematics(results.poseLandmarks);
+            if (isKinematicEnabled) {
+                analyzeKinematics(results.poseLandmarks);
+            }
         }
     });
 
     let prevLandmarks = null;
+    let peaks = [0, 0, 0, 0]; // Pelvis, Torso, Arm, Hand
+    let peakTimings = [0, 0, 0, 0];
+    let frameCount = 0;
+
     function analyzeKinematics(landmarks) {
         if (!prevLandmarks) {
             prevLandmarks = landmarks;
             return;
         }
 
-        // Calculate segment velocities (Simplified mock calculation for demo)
-        // 1. Pelvis (Average of hip movements)
-        const pelvisVel = Math.abs(landmarks[23].x - prevLandmarks[23].x) + Math.abs(landmarks[24].x - prevLandmarks[24].x);
-        // 2. Torso (Average of shoulder movements relative to hips)
-        const torsoVel = Math.abs(landmarks[11].x - prevLandmarks[11].x) + Math.abs(landmarks[12].x - prevLandmarks[12].x);
-        // 3. Arm (Elbow movement)
-        const armVel = Math.abs(landmarks[13].x - prevLandmarks[13].x) + Math.abs(landmarks[14].x - prevLandmarks[14].x);
-        // 4. Hand (Wrist movement)
-        const handVel = Math.abs(landmarks[15].x - prevLandmarks[15].x) + Math.abs(landmarks[16].x - prevLandmarks[16].x);
+        frameCount++;
 
-        const scale = 5000; // Scaling for visualization
-        updateChart([
-            Math.min(100, pelvisVel * scale),
-            Math.min(100, torsoVel * scale * 1.2),
-            Math.min(100, armVel * scale * 1.5),
-            Math.min(100, handVel * scale * 2)
-        ]);
+        // 1. Pelvis (Hips)
+        const pelvisVel = (Math.abs(landmarks[23].x - prevLandmarks[23].x) + Math.abs(landmarks[24].x - prevLandmarks[24].x)) * 5000;
+        // 2. Torso (Shoulders)
+        const torsoVel = (Math.abs(landmarks[11].x - prevLandmarks[11].x) + Math.abs(landmarks[12].x - prevLandmarks[12].x)) * 5500;
+        // 3. Arm (Elbow)
+        const armVel = (Math.abs(landmarks[13].x - prevLandmarks[13].x) + Math.abs(landmarks[14].x - prevLandmarks[14].x)) * 6500;
+        // 4. Hand (Wrist)
+        const handVel = (Math.abs(landmarks[15].x - prevLandmarks[15].x) + Math.abs(landmarks[16].x - prevLandmarks[16].x)) * 8000;
+
+        const currentVelocities = [pelvisVel, torsoVel, armVel, handVel];
+
+        // Track Peaks for Professional Analysis
+        currentVelocities.forEach((vel, i) => {
+            if (vel > peaks[i]) {
+                peaks[i] = vel;
+                peakTimings[i] = frameCount;
+            }
+        });
+
+        updateChart(currentVelocities.map(v => Math.min(100, v)));
+        generateKinematicAnalysis();
 
         // Update real-time metrics
         const armAng = calculateAngle(landmarks[11], landmarks[13], landmarks[15]);
@@ -180,6 +211,28 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('metric-knee').setAttribute('value', kneeAng.toFixed(1));
 
         prevLandmarks = landmarks;
+    }
+
+    function generateKinematicAnalysis() {
+        // Professional Logic: Efficient Sequence is Pelvis -> Torso -> Arm -> Hand
+        const isSequenceCorrect = peakTimings[0] < peakTimings[1] && peakTimings[1] < peakTimings[2] && peakTimings[2] < peakTimings[3];
+        
+        if (frameCount < 30) return; // Wait for enough data
+
+        let analysisText = "";
+        if (isSequenceCorrect) {
+            analysisText = "<span class='text-emerald-400 font-bold'>[EFFICIENT]</span> 하체-상체-팔-손의 에너지 전달 순서가 매우 이상적입니다. 운동 에너지가 손실 없이 배트에 전달되고 있습니다.";
+        } else {
+            // Find breakdown
+            if (peakTimings[1] < peakTimings[0]) {
+                analysisText = "<span class='text-rose-400 font-bold'>[INNEFICIENT]</span> 상체(Torso)가 하체(Pelvis)보다 먼저 반응하고 있습니다. 하체 고정력이 부족하여 비거리 손실이 예상됩니다.";
+            } else if (peakTimings[3] < peakTimings[2]) {
+                analysisText = "<span class='text-amber-400 font-bold'>[ADJUST]</span> 팔보다 손목의 회전이 빨라 '캐스팅' 동작이 발생하고 있습니다. 임팩트 시 정확도가 떨어질 수 있습니다.";
+            } else {
+                analysisText = "가속 타이밍 분석 중... 하체 중심 이동에 집중하십시오.";
+            }
+        }
+        kinematicStatusText.innerHTML = analysisText;
     }
 
     function calculateAngle(a, b, c) {
@@ -197,6 +250,18 @@ document.addEventListener('DOMContentLoaded', () => {
         sequenceChart.update('none');
     }
 
+    // Toggle Kinematic Analysis
+    kinematicToggle.addEventListener('change', (e) => {
+        isKinematicEnabled = e.target.checked;
+        if (!isKinematicEnabled) {
+            kinematicStatusText.innerHTML = "시퀀스 분석 중지됨 (OFF)";
+            chartData.datasets.forEach(d => d.data.fill(0));
+            sequenceChart.update();
+        } else {
+            kinematicStatusText.innerHTML = "에너지 전달 시퀀스 추적 중...";
+        }
+    });
+
     // Handle Upload
     uploadBtn.addEventListener('click', () => fileInput.click());
 
@@ -207,6 +272,11 @@ document.addEventListener('DOMContentLoaded', () => {
             inputVideo.src = url;
             videoOverlay.style.opacity = '0';
             
+            // Reset peaks
+            peaks = [0,0,0,0];
+            peakTimings = [0,0,0,0];
+            frameCount = 0;
+
             inputVideo.onloadedmetadata = () => {
                 outputCanvas.width = inputVideo.videoWidth;
                 outputCanvas.height = inputVideo.videoHeight;

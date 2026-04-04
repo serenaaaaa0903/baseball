@@ -136,6 +136,47 @@ scouting-grade {
     display: block;
 }
 
+/* Toggle Switch */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 18px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255,255,255,0.1);
+    transition: .4s;
+    border-radius: 34px;
+    border: 1px solid var(--border-white);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: var(--accent-blue); border-color: var(--accent-blue); }
+input:checked + .slider:before { transform: translateX(14px); }
+
+/* Neon Glows */
+.neon-cyan { color: #00ffff; text-shadow: 0 0 10px rgba(0, 255, 255, 0.5); }
+.neon-green { color: #39ff14; text-shadow: 0 0 10px rgba(57, 255, 20, 0.5); }
+.neon-amber { color: #ffcc33; text-shadow: 0 0 10px rgba(255, 204, 51, 0.5); }
+.neon-rose { color: #ff007f; text-shadow: 0 0 10px rgba(255, 0, 127, 0.5); }
+
 @media (max-width: 1024px) {
     .dashboard-card {
         border-radius: 1.25rem;
