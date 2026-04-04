@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="main.js" type="module"></script>
 </head>
 <body class="bg-[#020408] text-white font-['Inter'] selection:bg-blue-500/30">
@@ -55,10 +56,26 @@
 
                 <!-- Metrics Grid -->
                 <div class="grid grid-cols-2 gap-4">
-                    <metric-card label="ARM-ANG" value="142.5" unit="°" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=ARM"></metric-card>
-                    <metric-card label="KNEE-DRV" value="88.2" unit="°" trend="stable" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=KNEE"></metric-card>
-                    <metric-card label="TORQUE" value="1240" unit="N/m" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=TORQUE"></metric-card>
-                    <metric-card label="FOOT-FIX" value="98" unit="%" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=FOOT"></metric-card>
+                    <metric-card id="metric-arm" label="ARM-ANG" value="142.5" unit="°" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=ARM"></metric-card>
+                    <metric-card id="metric-knee" label="KNEE-DRV" value="88.2" unit="°" trend="stable" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=KNEE"></metric-card>
+                    <metric-card id="metric-torque" label="TORQUE" value="1240" unit="N/m" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=TORQUE"></metric-card>
+                    <metric-card id="metric-foot" label="FOOT-FIX" value="98" unit="%" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=FOOT"></metric-card>
+                </div>
+
+                <!-- Kinematic Sequence -->
+                <div class="dashboard-card flex flex-col">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-label">Kinematic Sequence Analytics</span>
+                        <div class="flex gap-2">
+                            <span class="text-[8px] text-blue-500 font-bold uppercase tracking-widest">• Pelvis</span>
+                            <span class="text-[8px] text-emerald-500 font-bold uppercase tracking-widest">• Torso</span>
+                            <span class="text-[8px] text-amber-500 font-bold uppercase tracking-widest">• Arm</span>
+                            <span class="text-[8px] text-rose-500 font-bold uppercase tracking-widest">• Hand</span>
+                        </div>
+                    </div>
+                    <div class="h-[120px] w-full">
+                        <canvas id="sequenceChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Director's Verdict -->
