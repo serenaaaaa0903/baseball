@@ -3,581 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AIS Professional | Next-Gen Scouting Intelligence</title>
+    <title>AIS | AI Swing Diagnostics</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap');
-
-        :root {
-            --obsidian: #020408;
-            --deep-slate: #0c111d;
-            --accent-blue: #3b82f6;
-            --pro-green: #10b981;
-            --border-white: rgba(255, 255, 255, 0.05);
-            --glass-bg: rgba(12, 17, 29, 0.6);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-font-smoothing: antialiased; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--obsidian); color: #f8fafc; overflow-x: hidden; }
-        .proto-font { font-family: 'Orbitron', sans-serif; letter-spacing: -0.05em; }
-        
-        /* Premium Background Texture */
-        .noise-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); opacity: 0.02; pointer-events: none; z-index: 1000; }
-        .ambient-glow { position: fixed; top: -20%; right: -10%; width: 60%; height: 60%; background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%); pointer-events: none; z-index: 1; }
-
-        /* Professional Bento Dashboard */
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            gap: 1.25rem;
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 2rem;
-            position: relative;
-            z-index: 10;
-        }
-
-        .dashboard-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
-            border: 1px solid var(--border-white);
-            border-radius: 1.75rem;
-            padding: 1.5rem;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dashboard-card:hover { border-color: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
-
-        /* Card Sizes */
-        .col-main { grid-column: span 12; }
-        .col-side { grid-column: span 12; }
-        .col-quarter { grid-column: span 6; }
-
-        @media (min-width: 1280px) {
-            .col-main { grid-column: span 8; height: 600px; }
-            .col-side { grid-column: span 4; height: 300px; }
-            .col-quarter { grid-column: span 4; height: 300px; }
-            .col-full { grid-column: span 12; }
-        }
-
-        /* Analytics Specific UI */
-        .video-wrapper { position: relative; width: 100%; height: 100%; border-radius: 1.25rem; overflow: hidden; background: #000; }
-        canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 20; }
-        #input_video { position: absolute; opacity: 0; pointer-events: none; }
-
-        .status-badge {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-white);
-            padding: 0.5rem 1rem;
-            border-radius: 99px;
-            font-size: 0.65rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            color: #94a3b8;
-        }
-
-        .active-status { color: var(--pro-green); border-color: rgba(16, 185, 129, 0.2); }
-
-        /* Professional Buttons */
-        .btn-primary {
-            background: #fff;
-            color: var(--obsidian);
-            font-weight: 700;
-            padding: 0.75rem 1.5rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: 0.3s;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
-
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.05);
-            color: #fff;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            border: 1px solid var(--border-white);
-            transition: 0.3s;
-        }
-
-        .btn-ghost:hover { background: rgba(255, 255, 255, 0.1); }
-
-        /* Modals */
-        .modal-overlay { display: none; position: fixed; inset: 0; z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(40px); background: rgba(0,0,0,0.4); }
-        .active-modal { display: flex !important; }
-
-        /* Locked States */
-        .lock-shield {
-            position: absolute; inset: 0; background: rgba(2, 4, 8, 0.85); backdrop-filter: blur(10px);
-            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100;
-            padding: 2rem; text-align: center;
-        }
-
-        /* Typography Presets */
-        .text-label { font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.5rem; display: block; }
-        .text-data-lg { font-size: 4rem; font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
-        .text-pro-accent { color: var(--pro-green); text-shadow: 0 0 15px rgba(16, 185, 129, 0.3); }
-
-        /* Animation */
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        .float { animation: float 5s ease-in-out infinite; }
-    </style>
+    <script src="main.js" type="module"></script>
 </head>
-<body>
+<body class="bg-[#020408] text-white font-['Inter'] selection:bg-blue-500/30">
     <div class="noise-overlay"></div>
     <div class="ambient-glow"></div>
 
-    <!-- Professional Navigation Bar -->
-    <nav class="max-w-[1600px] mx-auto px-8 py-8 flex justify-between items-center relative z-[100]">
-        <div class="flex items-center gap-6">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="p-6 flex justify-between items-center relative z-50">
             <div class="flex flex-col">
-                <span class="proto-font text-3xl font-black italic text-white flex items-center gap-2">AIS <span class="text-blue-500">PRO</span></span>
-                <span class="text-[9px] font-extrabold text-slate-500 uppercase tracking-[0.4em] mt-1 italic">Intelligence Scouting Portal</span>
+                <span class="proto-font text-2xl font-black italic tracking-tighter">AIS <span class="text-blue-500">DIAGNOSTICS</span></span>
+                <span class="text-[8px] font-extrabold text-slate-500 uppercase tracking-[0.4em] mt-1">Next-Gen Scouting Intelligence</span>
             </div>
-            <div id="benefitBadge" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[8px] font-black px-3 py-1.5 rounded-full uppercase tracking-widest float">
-                1x Free Pro Pass Active
+            <div class="flex gap-4">
+                <button id="uploadBtn" class="btn-primary">UPLOAD VIDEO</button>
+                <button id="reportBtn" class="btn-secondary">GENERATE REPORT</button>
+                <input type="file" id="fileInput" accept="video/*" class="hidden">
             </div>
-        </div>
-        <div class="flex items-center gap-4">
-            <button onclick="openInviteModal()" class="btn-ghost !text-emerald-400 !border-emerald-500/20 hover:!bg-emerald-500/10">Invite Friend</button>
-            <button onclick="openCheckout()" class="btn-ghost !text-amber-400 !border-amber-500/20">Upgrade</button>
-            <div class="h-8 w-[1px] bg-slate-800 mx-2"></div>
-            <button onclick="document.getElementById('fileInput').click()" class="btn-primary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-                Import Video
-            </button>
-            <input type="file" id="fileInput" accept="video/*" class="hidden">
-        </div>
-    </nav>
+        </header>
 
-    <main class="dashboard-container">
-        <!-- Main Analysis Stream -->
-        <div class="dashboard-card col-main group">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <span class="text-label">Live Analysis Stream</span>
-                    <h2 class="text-xl font-bold text-white uppercase italic tracking-tighter">Kinetic Analysis Engine</h2>
+        <!-- Main Dashboard -->
+        <main class="flex-1 grid grid-cols-1 lg:grid-cols-[1.2fr,0.8fr] gap-6 p-6 pt-0 relative z-10">
+            <!-- Left: Video Panel -->
+            <section class="dashboard-card overflow-hidden flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-label">Live Video Stream</span>
+                    <div class="status-badge active-status">Tracking v4.2 Active</div>
                 </div>
-                <div id="aiStatus" class="status-badge active-status">System Ready</div>
-            </div>
-            <div class="video-wrapper shadow-2xl">
-                <canvas id="output_canvas"></canvas>
-                <video id="input_video" playsinline muted onended="handleVideoEnd()"></video>
-                
-                <!-- On-Video Metrics -->
-                <div class="absolute bottom-6 left-6 z-30 space-y-2">
-                    <div class="glass-ui px-4 py-2 rounded-xl flex items-center gap-3">
-                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                        <span class="text-[10px] font-black text-white uppercase">Skeletal Tracking v4.2</span>
+                <div class="video-container flex-1 bg-black rounded-2xl relative">
+                    <video id="input_video" class="hidden"></video>
+                    <canvas id="output_canvas" class="w-full h-full object-contain rounded-2xl"></canvas>
+                    <div id="videoOverlay" class="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm pointer-events-none transition-opacity duration-500">
+                        <p class="text-slate-400 text-sm font-medium">Please upload a video for analysis</p>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Composite Score -->
-        <div class="dashboard-card col-side flex flex-col justify-center items-center text-center">
-            <span class="text-label">Performance Grade</span>
-            <div id="finalScore" class="proto-font text-data-lg text-white glow-text">--</div>
-            <div class="mt-4 flex flex-col gap-1">
-                <span id="tierLabel" class="text-[10px] font-black text-slate-500 uppercase tracking-widest italic">Awaiting Telemetry</span>
-                <div class="w-16 h-1 bg-slate-800 mx-auto rounded-full overflow-hidden mt-2">
-                    <div id="scoreProgress" class="h-full bg-blue-500 transition-all duration-1000" style="width: 0%"></div>
+            <!-- Right: Data Panel -->
+            <section class="flex flex-col gap-6">
+                <!-- Scouting Grade -->
+                <div class="dashboard-card flex flex-col justify-center items-center py-8">
+                    <span class="text-label mb-2">Final Scouting Grade</span>
+                    <scouting-grade score="59" total="80"></scouting-grade>
                 </div>
-            </div>
-        </div>
 
-        <!-- Biometrics Gauge -->
-        <div class="dashboard-card col-quarter flex flex-col justify-between">
-            <div>
-                <span class="text-label">Biometric Telemetry</span>
-                <h3 class="text-sm font-bold text-white uppercase mb-6">Chain Stability</h3>
-            </div>
-            <div class="space-y-6">
-                <div>
-                    <div class="flex justify-between items-end mb-2">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase">Kinetic Torque</span>
-                        <span id="liveTorque" class="proto-font text-2xl text-white">0.0°</span>
-                    </div>
-                    <div class="h-1 w-full bg-slate-800 rounded-full">
-                        <div id="torqueBar" class="h-full bg-blue-600 transition-all" style="width: 0%"></div>
+                <!-- Metrics Grid -->
+                <div class="grid grid-cols-2 gap-4">
+                    <metric-card label="ARM-ANG" value="142.5" unit="°" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=ARM"></metric-card>
+                    <metric-card label="KNEE-DRV" value="88.2" unit="°" trend="stable" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=KNEE"></metric-card>
+                    <metric-card label="TORQUE" value="1240" unit="N/m" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=TORQUE"></metric-card>
+                    <metric-card label="FOOT-FIX" value="98" unit="%" trend="up" inset-img="https://placehold.co/100x100/0c111d/3b82f6?text=FOOT"></metric-card>
+                </div>
+
+                <!-- Director's Verdict -->
+                <div class="dashboard-card flex-1 flex flex-col">
+                    <span class="text-label mb-4">Director's Verdict</span>
+                    <div id="verdictBox" class="flex-1 bg-white/5 rounded-xl p-4 border border-white/5 text-sm leading-relaxed text-slate-300">
+                        <p class="mb-2">임팩트 시 하체 고정력이 우수함 (FOOT-FIX: 98%).</p>
+                        <p class="mb-2">팔의 각도가 다소 높게 형성되어 스윙 궤적이 가파릅니다 (ARM-ANG: 142.5°).</p>
+                        <p>토크 발생 시 골반의 회전력이 인상적이며, 에너지가 효율적으로 전달되고 있습니다.</p>
                     </div>
                 </div>
-                <div class="flex justify-between border-t border-white/5 pt-4">
-                    <div>
-                        <span class="text-label mb-0">Balance</span>
-                        <p id="stabilityVal" class="text-xl font-black text-white">0%</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-label mb-0">Peak Vel</span>
-                        <p class="text-xl font-black text-blue-500 italic">N/A</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Professional Ad Card -->
-        <div class="dashboard-card col-quarter !bg-gradient-to-br from-blue-900/10 to-transparent">
-            <span class="text-label !text-blue-500">Social Verification</span>
-            <div class="h-[180px] overflow-hidden relative mt-4">
-                <div id="reviewContainer" class="space-y-4">
-                    <!-- Reviews -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Real-time Director Commentary -->
-        <div class="dashboard-card col-quarter flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <div>
-                    <span class="text-label">AI Director</span>
-                    <h3 class="text-sm font-bold text-white uppercase italic">Live Insights</h3>
-                </div>
-                <button onclick="openReport()" class="text-[9px] font-black text-blue-500 uppercase tracking-widest hover:text-white transition">Full Data</button>
-            </div>
-            <div id="chatHistory" class="flex-1 space-y-4 overflow-y-auto max-h-[200px] pr-2">
-                <div class="p-4 bg-white/5 rounded-2xl border border-white/5 italic text-slate-400 text-xs leading-relaxed">
-                    시스템이 준비되었습니다. 영상을 업로드하면 실시간 정밀 분석 피드백이 여기에 출력됩니다.
-                </div>
-            </div>
-        </div>
-
-        <!-- Super Pro Trends Graph -->
-        <div class="dashboard-card col-full">
-            <div class="lock-shield" id="gate-graph">
-                <span class="text-label !text-amber-400 mb-2">Super Pro Intelligence</span>
-                <h3 class="text-white text-lg font-black uppercase mb-4 tracking-tighter">Performance Trend Analytics</h3>
-                <button onclick="openCheckout('super')" class="btn-primary !bg-amber-400 !text-black">Unlock Elite Portal</button>
-            </div>
-            <div class="flex justify-between items-center mb-8">
-                <div>
-                    <span class="text-label">Elite Telemetry</span>
-                    <h3 class="text-xl font-black text-white uppercase italic tracking-tighter">Multi-Day Performance Metrics</h3>
-                </div>
-                <div class="flex gap-4">
-                    <div class="flex items-center gap-2"><div class="w-3 h-3 bg-blue-500 rounded-full"></div><span class="text-[10px] font-bold text-slate-500 uppercase">Score Avg</span></div>
-                    <div class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-700 rounded-full"></div><span class="text-[10px] font-bold text-slate-500 uppercase">Volume</span></div>
-                </div>
-            </div>
-            <div class="h-[250px] w-full">
-                <canvas id="scoreChart"></canvas>
-            </div>
-        </div>
-    </main>
-
-    <!-- Professional Modals (Invite, Checkout, Report) -->
-    <div id="inviteModal" class="modal-overlay">
-        <div class="dashboard-card !p-10 w-full max-w-sm shadow-2xl float">
-            <h2 class="proto-font text-2xl text-white mb-2 uppercase italic tracking-tighter">Invite <span class="text-emerald-500">Elite</span></h2>
-            <p class="text-slate-500 text-xs mb-8 leading-relaxed">Enter a partner's number to unlock a professional-grade 1x Pro Scouting Analysis Pass.</p>
-            <div class="card-entry mb-6 border-emerald-500/20">
-                <input type="tel" id="invitePhone" placeholder="010-0000-0000" class="text-center font-bold tracking-widest placeholder:text-slate-700">
-            </div>
-            <button onclick="processInvite()" class="btn-primary !bg-emerald-500 !text-white !w-full !py-5 justify-center">Generate Secure Link</button>
-            <button onclick="closeInviteModal()" class="w-full text-center mt-6 text-[10px] font-bold text-slate-600 uppercase hover:text-white transition">Dismiss</button>
-        </div>
+            </section>
+        </main>
     </div>
-
-    <div id="checkoutModal" class="modal-overlay">
-        <div class="dashboard-card !p-10 w-full max-w-md shadow-2xl">
-            <h2 class="proto-font text-2xl text-white mb-6 uppercase italic tracking-tighter">Activate <span class="text-blue-500">Scout Tier</span></h2>
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div onclick="selectPlan('pro')" id="plan-pro" class="p-6 rounded-2xl border border-blue-500/30 bg-blue-500/5 cursor-pointer transition-all">
-                    <p class="text-[10px] font-black text-blue-500 uppercase mb-2">Professional</p>
-                    <p class="text-2xl font-black text-white">$29<span class="text-xs text-slate-500">/mo</span></p>
-                </div>
-                <div onclick="selectPlan('super')" id="plan-super" class="p-6 rounded-2xl border border-slate-800 bg-slate-900/50 cursor-pointer transition-all">
-                    <p class="text-[10px] font-black text-amber-500 uppercase mb-2">Elite Super</p>
-                    <p class="text-2xl font-black text-white">$49<span class="text-xs text-slate-500">/mo</span></p>
-                </div>
-            </div>
-            <div class="space-y-4 mb-8">
-                <div class="card-entry"><input type="text" value="4242 4242 4242 4242" class="text-center"></div>
-            </div>
-            <button onclick="processPayment()" id="payBtn" class="btn-primary !bg-blue-600 !text-white !w-full !py-5 justify-center">Authorize Transaction</button>
-            <button onclick="closeCheckout()" class="w-full text-center mt-6 text-[10px] font-bold text-slate-600 uppercase hover:text-white transition">Cancel</button>
-
-            <!-- Loading/Success states... -->
-            <div id="paymentLoading" class="hidden absolute inset-0 bg-[#0c111d] flex flex-col items-center justify-center p-10 text-center z-[110]">
-                <div class="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-6"></div>
-                <p class="text-white font-black text-lg uppercase">Securing Access...</p>
-            </div>
-            <div id="paymentSuccess" class="hidden absolute inset-0 bg-[#0c111d] flex flex-col items-center justify-center p-10 text-center z-[120]">
-                <div class="w-20 h-20 bg-emerald-500 rounded-full flex items-center justify-center text-4xl mb-6">✓</div>
-                <p class="text-white font-black text-2xl uppercase mb-2">Portal Active</p>
-                <button onclick="finalizeUpgrade()" class="btn-primary !w-full justify-center">Enter Dashboard</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Full Scouting Report Modal -->
-    <div id="reportModal" class="modal-overlay">
-        <div class="bg-[#020408] border border-slate-800 w-full max-w-6xl mx-auto rounded-[3rem] h-[90vh] flex flex-col shadow-2xl overflow-hidden relative">
-            <div id="pdfContent" class="flex-1 overflow-y-auto p-12 md:p-20 space-y-16">
-                <div class="flex justify-between items-end border-b border-white/5 pb-12">
-                    <div>
-                        <h2 class="proto-font text-5xl text-white font-black italic tracking-tighter uppercase">Intelligence <span class="text-blue-500">Report</span></h2>
-                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3 italic">AIS Professional Data Extraction</p>
-                    </div>
-                    <div id="tierBadge" class="px-6 py-2 rounded-full bg-slate-900 border border-white/5 text-[10px] font-black text-white uppercase tracking-[0.2em]">Tier: Basic</div>
-                </div>
-                
-                <div id="reportDataGrid" class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                    <div class="md:col-span-1 bg-blue-600 p-12 rounded-[2.5rem] flex flex-col items-center justify-center text-center shadow-2xl">
-                        <span class="text-label !text-white opacity-60">Composite Grade</span>
-                        <p id="reportScore" class="text-9xl font-black italic text-white tracking-tighter">--</p>
-                    </div>
-                    <div class="md:col-span-2 space-y-8">
-                        <div>
-                            <span class="text-label">AI Director Commentary</span>
-                            <div id="directorSummary" class="text-slate-400 text-lg leading-relaxed italic">"영상을 업로드하면 AI 감독의 종합적인 분석 의견이 이곳에 출력됩니다."</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <div class="dashboard-card relative">
-                        <div class="lock-shield" id="gate-diet"><span class="text-label !text-amber-400">Pro Feature Locked</span></div>
-                        <span class="text-label !text-blue-500">Strategic Nutrition</span>
-                        <div id="dietContent" class="space-y-4 mt-4"></div>
-                    </div>
-                    <div class="dashboard-card relative">
-                        <div class="lock-shield" id="gate-recipe"><span class="text-label !text-amber-400">Elite Feature Locked</span></div>
-                        <span class="text-label !text-amber-500">Bio-Hacking Recipes</span>
-                        <div id="recipeContent" class="space-y-4 mt-4"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="p-10 border-t border-white/5 bg-slate-950/50 backdrop-blur-xl flex justify-center gap-6">
-                <div class="relative group" id="btn-save-pdf">
-                    <div class="lock-shield !bg-black/20 !rounded-2xl group-hover:hidden" id="gate-pdf-btn"></div>
-                    <button onclick="saveFullPDF()" class="btn-primary !px-16 !py-5">Download Intelligence PDF</button>
-                </div>
-                <button onclick="closeModal()" class="btn-ghost !px-16 !py-5">Exit Portal</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global State & Core Logic
-        let currentTier = 'basic';
-        let hasFreePass = false;
-        let isUsingFreePass = false;
-        let selectedPlan = 'pro';
-        const sessionData = [];
-
-        const video = document.getElementById('input_video');
-        const canvas = document.getElementById('output_canvas');
-        const ctx = canvas.getContext('2d');
-
-        // Professional Reviews Init
-        const reviews = [
-            { n: "김*우 (18세, 학생)", j: "Prospect", t: "AI skeletal tracking is elite. My swing speed increased by 15%." },
-            { n: "박*준 (32세, 직장인)", j: "Amateur", t: "Director's feedback is game-changing. Professional scouting at my fingertips." },
-            { n: "강*호 (50세, 클럽회장)", j: "Club", t: "The metrics dashboard is incredibly intuitive and professional." }
-        ];
-
-        function initReviews() {
-            const container = document.getElementById('reviewContainer');
-            container.innerHTML = [...reviews, ...reviews].map(r => `
-                <div class="p-4 bg-white/5 border border-white/5 rounded-2xl mb-4">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-[10px] font-bold text-white">${r.n}</span>
-                        <span class="text-[8px] bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded uppercase font-black tracking-widest">${r.j}</span>
-                    </div>
-                    <p class="text-slate-500 text-[10px] italic leading-relaxed">"${r.t}"</p>
-                </div>
-            `).join('');
-        }
-        initReviews();
-
-        // UI & Modal Control
-        function openInviteModal() { document.getElementById('inviteModal').classList.add('active-modal'); }
-        function closeInviteModal() { document.getElementById('inviteModal').classList.remove('active-modal'); }
-        function openCheckout(plan = 'pro') { document.getElementById('checkoutModal').classList.add('active-modal'); selectPlan(plan); }
-        function closeCheckout() { document.getElementById('checkoutModal').classList.remove('active-modal'); document.getElementById('paymentLoading').classList.add('hidden'); document.getElementById('paymentSuccess').classList.add('hidden'); }
-        
-        function selectPlan(plan) {
-            selectedPlan = plan;
-            document.getElementById('plan-pro').className = plan === 'pro' ? 'p-6 rounded-2xl border border-blue-500/30 bg-blue-500/10 cursor-pointer transition-all' : 'p-6 rounded-2xl border border-slate-800 bg-slate-900/50 cursor-pointer transition-all';
-            document.getElementById('plan-super').className = plan === 'super' ? 'p-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 cursor-pointer transition-all' : 'p-6 rounded-2xl border border-slate-800 bg-slate-900/50 cursor-pointer transition-all';
-        }
-
-        function processInvite() {
-            const phone = document.getElementById('invitePhone').value;
-            if(!phone || phone.length < 10) return alert("올바른 번호를 입력하세요.");
-            hasFreePass = true;
-            document.getElementById('benefitBadge').classList.remove('hidden');
-            alert("친구 초대 링크가 전송되었습니다. 1회 Pro 분석 이용권이 활성화되었습니다.");
-            closeInviteModal();
-        }
-
-        function processPayment() {
-            document.getElementById('paymentLoading').classList.remove('hidden');
-            setTimeout(() => {
-                document.getElementById('paymentLoading').classList.add('hidden');
-                document.getElementById('paymentSuccess').classList.remove('hidden');
-            }, 2000);
-        }
-
-        function finalizeUpgrade() { setTier(selectedPlan); closeCheckout(); }
-
-        function setTier(tier) {
-            currentTier = tier;
-            document.getElementById('gate-graph').classList.toggle('hidden', tier === 'super');
-            updateModalGates();
-        }
-
-        function updateModalGates() {
-            const isPro = currentTier === 'pro' || currentTier === 'super' || isUsingFreePass;
-            const isSuper = currentTier === 'super';
-            
-            document.getElementById('gate-diet').classList.toggle('hidden', isPro);
-            document.getElementById('gate-recipe').classList.toggle('hidden', isSuper);
-            document.getElementById('gate-pdf-btn').classList.toggle('hidden', isPro);
-            
-            const badge = document.getElementById('tierBadge');
-            badge.innerText = `TIER: ${isUsingFreePass ? 'FREE PRO' : currentTier.toUpperCase()}`;
-            badge.className = `px-6 py-2 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] ${isSuper ? 'bg-amber-500/10 border-amber-500/30 text-amber-500' : (isPro ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-slate-900 border-white/5 text-white')}`;
-        }
-
-        // Analysis Engine (MediaPipe)
-        const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
-        pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
-        
-        pose.onResults(results => {
-            ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-            if (results.poseLandmarks) {
-                drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#3b82f6', lineWidth: 2});
-                const lm = results.poseLandmarks;
-                const isReady = (lm[15].y < lm[11].y + 0.2);
-                const status = document.getElementById('aiStatus');
-                status.innerText = isReady ? "Analyzing Motion" : "Scanning Skeleton";
-                status.className = `status-badge ${isReady ? 'active-status text-pro-green' : ''}`;
-                
-                if(isReady && Math.random() > 0.985 && sessionData.length < 8) processSwing();
-                
-                const torque = (Math.abs(lm[11].x - lm[23].x) * 500).toFixed(1);
-                const stability = Math.max(0, 100 - Math.abs(lm[0].x - 0.5) * 1000);
-                
-                document.getElementById('liveTorque').innerText = torque + "°";
-                document.getElementById('torqueBar').style.width = Math.min(100, torque) + "%";
-                document.getElementById('stabilityVal').innerText = Math.round(stability) + "%";
-            }
-            ctx.restore();
-        });
-
-        async function startAI() { 
-            if(!video.paused) { 
-                if(hasFreePass && currentTier === 'basic' && !isUsingFreePass) {
-                    isUsingFreePass = true;
-                }
-                await pose.send({image: video}); 
-                requestAnimationFrame(startAI); 
-            } 
-        }
-
-        const feedbacks = ["임팩트 포인트 완벽", "체중 이동 타이밍 우수", "코어 회전 가속도 최고", "안정적인 하체 밸런스", "간결한 백스윙 궤적", "프로급 피니시 자세"];
-        function processSwing() {
-            const score = Math.floor(Math.random()*12)+85;
-            document.getElementById('finalScore').innerText = score;
-            document.getElementById('scoreProgress').style.width = score + "%";
-            document.getElementById('tierLabel').innerText = score > 92 ? "Elite Tier Detected" : "Pro Tier Detected";
-            
-            const f = feedbacks[Math.floor(Math.random()*feedbacks.length)];
-            const history = document.getElementById('chatHistory');
-            history.insertAdjacentHTML('afterbegin', `
-                <div class="p-4 bg-blue-600/5 border border-blue-500/10 rounded-2xl mb-3 animate-pulse">
-                    <p class="text-[8px] font-black text-blue-500 uppercase mb-1">Live Engine Analysis</p>
-                    <p class="text-white text-xs font-medium italic">"${f}"</p>
-                </div>
-            `);
-            sessionData.push({s: score, f: f});
-        }
-
-        function handleVideoEnd() {
-            if(isUsingFreePass) {
-                hasFreePass = false;
-                document.getElementById('benefitBadge').classList.add('hidden');
-            }
-        }
-
-        function openReport() {
-            if(sessionData.length === 0 && !isUsingFreePass) return alert("데이터가 존재하지 않습니다.");
-            const avg = Math.round(sessionData.reduce((a,b)=>a+b.s,0)/sessionData.length) || 92;
-            document.getElementById('reportScore').innerText = avg;
-            document.getElementById('directorSummary').innerText = `종합 분석 결과, 스윙의 안정성이 ${avg}점으로 매우 높게 평가되었습니다. 특히 임팩트 시의 골반 회전 토크가 이상적입니다.`;
-            
-            document.getElementById('dietContent').innerHTML = `
-                <p class="text-white font-bold text-sm">🔥 파워 강화를 위한 단백질 로딩</p>
-                <p class="text-slate-500 text-xs">근육 회복을 위한 닭가슴살 200g 및 아미노산 보충 권장.</p>
-            `;
-            document.getElementById('recipeContent').innerHTML = `
-                <p class="text-white font-bold text-sm">🥗 엘리트 에너지 연어 볼</p>
-                <p class="text-slate-500 text-xs">오메가3 함유량이 높은 생연어와 퀴노아 베이스 레시피.</p>
-            `;
-
-            updateModalGates();
-            document.getElementById('reportModal').classList.add('active-modal');
-        }
-
-        function closeModal() { document.getElementById('reportModal').classList.remove('active-modal'); isUsingFreePass = false; }
-
-        async function saveFullPDF() {
-            const target = document.getElementById('pdfContent');
-            const canvasImg = await html2canvas(target, { scale: 2, backgroundColor: '#020408' });
-            const doc = new jspdf.jsPDF('p', 'mm', 'a4');
-            doc.addImage(canvasImg.toDataURL('image/png'), 'PNG', 0, 0, 210, (canvasImg.height*210)/canvasImg.width);
-            doc.save(`AIS_Intelligence_Report.pdf`);
-        }
-
-        document.getElementById('fileInput').addEventListener('change', e => {
-            video.src = URL.createObjectURL(e.target.files[0]);
-            video.onloadeddata = () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; video.play(); startAI(); };
-        });
-
-        // Professional Chart Init
-        const chartCtx = document.getElementById('scoreChart').getContext('2d');
-        new Chart(chartCtx, {
-            type: 'line',
-            data: {
-                labels: ['APR 01', 'APR 02', 'APR 03', 'APR 04'],
-                datasets: [{
-                    data: [82, 85, 88, 92],
-                    borderColor: '#3b82f6',
-                    borderWidth: 3,
-                    pointBackgroundColor: '#3b82f6',
-                    fill: true,
-                    backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                    tension: 0.4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.03)' }, ticks: { color: '#475569', font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } }
-                }
-            }
-        });
-    </script>
 </body>
 </html>
