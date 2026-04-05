@@ -22,12 +22,11 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
 *   **Controls:** Sleek "UPLOAD VIDEO" and "GENERATE REPORT" buttons.
 
 ## **4. Current Implementation Plan**
-1.  **Dashboard Simplification:** Refactor `index.html` to a clean 2-column layout.
-2.  **Web Component Integration:** Create `<metric-card>` and `<scouting-grade>` components.
-3.  **Refined Styling:** Apply Obsidian/Deep Slate theme and glassmorphism across all panels.
-4.  **Logic Update:** Ensure the buttons and data fields are properly linked in `main.js`.
-5.  **Korean Localization:** Implement the "Director's Verdict" with professional Korean scouting terminology.
+1.  **Dashboard Layout Optimization:** Adjust the grid ratio to provide a larger, more immersive video analysis area (1.4fr : 0.6fr).
+2.  **Professional Scouting Language:** Update analysis logic to use advanced biomechanical terminology (e.g., Hip-Shoulder Separation, Ground Reaction Force, Elastic Energy Transfer).
+3.  **Enhanced Report Content:** Refine the AI Prescription and Director's Verdict with professional athletic training and scouting insights.
+4.  **Video Control Improvements:** Ensure the video canvas maintains high fidelity and fits the optimized layout.
 
 ---
 
-*Last Updated: 2026-04-04*
+*Last Updated: 2026-04-04 (v1.1)*

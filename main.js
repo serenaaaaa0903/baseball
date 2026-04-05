@@ -239,13 +239,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isSequenceCorrect) {
             type = "well";
-            analysis = "하체 리드가 완벽하며 에너지가 손실 없이 상체로 전달됩니다.";
+            analysis = "키네마틱 시퀀스가 이상적입니다. 골반-통소-팔-손으로 이어지는 탄성 에너지 전달(Elastic Energy Transfer)이 효율적으로 이루어지고 있습니다.";
         } else if (peakTimings[1] < peakTimings[0]) {
             type = "needs";
-            analysis = "상체가 하체보다 먼저 회전하여 힘의 손실이 발생합니다.";
+            analysis = "힙-숄더 세퍼레이션(Hip-Shoulder Separation) 타이밍 부적절. 상체가 하체보다 먼저 회전하여 지면 반발력(GRF)을 온전히 활용하지 못하고 있습니다.";
         } else if (peakTimings[3] < peakTimings[2]) {
             type = "needs";
-            analysis = "팔보다 손목이 먼저 풀리는 캐스팅 동작이 관찰됩니다.";
+            analysis = "조기 릴리스(Early Release) 관찰. 팔의 가속이 정점에 도달하기 전에 손목이 풀리며 원심력을 손실하고 있습니다.";
         }
 
         if (analysis && type !== lastAnalysisKey) {
@@ -253,8 +253,11 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePrescriptions(type);
             
             const p = document.createElement('p');
-            p.className = `mb-2 border-l-2 ${type==='well'?'border-emerald-500':'border-rose-500'} pl-3 py-1 bg-white/5 rounded-r-lg`;
-            p.innerHTML = `<span class='font-black text-[9px] uppercase tracking-widest block mb-1'>Frame ${frameCount}</span>${analysis}`;
+            p.className = `mb-3 border-l-4 ${type==='well'?'border-emerald-500':'border-rose-500'} pl-4 py-2 bg-white/5 rounded-r-xl transition-all duration-300 hover:bg-white/10`;
+            p.innerHTML = `
+                <span class='font-black text-[8px] uppercase tracking-[0.2em] text-slate-500 block mb-1'>Scouting Log [Frame ${frameCount}]</span>
+                <span class='text-sm leading-relaxed'>${analysis}</span>
+            `;
             if (verdictBox.firstChild && verdictBox.firstChild.classList.contains('italic')) verdictBox.innerHTML = "";
             verdictBox.prepend(p);
             lastAnalysisKey = type;
@@ -268,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (container.querySelector('p.italic')) container.innerHTML = "";
 
         const capture = document.createElement('div');
-        capture.className = "bg-white/5 border border-white/5 rounded-xl overflow-hidden";
+        capture.className = "bg-white/5 border border-white/5 rounded-xl overflow-hidden group hover:border-blue-500/30 transition-all";
         
         const canvas = document.createElement('canvas');
         canvas.width = 160;
@@ -277,9 +280,14 @@ document.addEventListener('DOMContentLoaded', () => {
         cctx.drawImage(outputCanvas, 0, 0, 160, 90);
 
         capture.innerHTML = `
-            <img src="${canvas.toDataURL()}" class="w-full h-auto">
-            <div class="p-2">
-                <p class="text-[9px] text-slate-400 leading-tight">${comment}</p>
+            <div class="relative overflow-hidden">
+                <img src="${canvas.toDataURL()}" class="w-full h-auto group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute top-2 left-2 bg-black/60 backdrop-blur px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-widest border border-white/10">
+                    ${type === 'well' ? 'Optimal' : 'Deficit'}
+                </div>
+            </div>
+            <div class="p-3">
+                <p class="text-[10px] text-slate-300 leading-normal font-medium">${comment}</p>
             </div>
         `;
         container.appendChild(capture);
@@ -289,29 +297,53 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePrescriptions(type) {
         if (type === 'well') {
             exerciseRec.innerHTML = `
-                <ul class="space-y-2">
-                    <li class="flex gap-2"><span>•</span> <strong>Medicine Ball Slams:</strong> 폭발적인 파워 유지</li>
-                    <li class="flex gap-2"><span>•</span> <strong>Single-leg Stability:</strong> 하체 고정력 강화</li>
-                </ul>
+                <div class="space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-blue-400">Advanced Power Phase</span>
+                        <p class="text-[11px] leading-relaxed">회전 파워 극대화를 위해 메디신 볼 슬램과 밴드 저항을 이용한 폭발적 회전 훈련을 권장합니다.</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-white/5 pt-2">
+                        <span class="text-[10px] font-bold text-blue-400">Neuromuscular Control</span>
+                        <p class="text-[11px] leading-relaxed">현 상태의 최적 시퀀스를 유지하기 위한 고유 수용성 감각 훈련을 병행하십시오.</p>
+                    </div>
+                </div>
             `;
             nutritionRec.innerHTML = `
-                <ul class="space-y-2">
-                    <li class="flex gap-2"><span>•</span> <strong>Whey Protein:</strong> 근육 회복 및 합성</li>
-                    <li class="flex gap-2"><span>•</span> <strong>Banana:</strong> 즉각적인 에너지 공급</li>
-                </ul>
+                <div class="space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-amber-400">Muscle Protein Synthesis</span>
+                        <p class="text-[11px] leading-relaxed">고강도 훈련 후 근섬유 복구를 위해 빠른 흡수율의 유청 단백질 30g 섭취를 추천합니다.</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-white/5 pt-2">
+                        <span class="text-[10px] font-bold text-amber-400">Glycogen Loading</span>
+                        <p class="text-[11px] leading-relaxed">지속적인 파워 출력을 위해 고구마, 귀리 등 복합 탄수화물 위주의 식단을 구성하십시오.</p>
+                    </div>
+                </div>
             `;
         } else {
             exerciseRec.innerHTML = `
-                <ul class="space-y-2">
-                    <li class="flex gap-2"><span>•</span> <strong>Plank Rotations:</strong> 코어 분리 능력 향상</li>
-                    <li class="flex gap-2"><span>•</span> <strong>Wrist Curls:</strong> 손목 조절력 강화</li>
-                </ul>
+                <div class="space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-rose-400">Correction: Separation Drill</span>
+                        <p class="text-[11px] leading-relaxed">상하체 분리 능력 향상을 위해 '90-90 스트레칭'과 '피겨 에이트' 드릴을 매일 3세트 반복하십시오.</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-white/5 pt-2">
+                        <span class="text-[10px] font-bold text-rose-400">Core Torque Enhancement</span>
+                        <p class="text-[11px] leading-relaxed">안정적인 회전축 형성을 위해 안티-로테이션 팔로프 프레스 훈련이 필요합니다.</p>
+                    </div>
+                </div>
             `;
             nutritionRec.innerHTML = `
-                <ul class="space-y-2">
-                    <li class="flex gap-2"><span>•</span> <strong>Tart Cherry Juice:</strong> 염증 감소 및 회복</li>
-                    <li class="flex gap-2"><span>•</span> <strong>BCAA:</strong> 피로도 감소 및 근손실 방지</li>
-                </ul>
+                <div class="space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-bold text-amber-400">Inflammation Management</span>
+                        <p class="text-[11px] leading-relaxed">불안정한 폼으로 인한 관절 부하를 줄이기 위해 오메가-3와 타트체리 주스를 섭취하십시오.</p>
+                    </div>
+                    <div class="flex flex-col gap-1 border-t border-white/5 pt-2">
+                        <span class="text-[10px] font-bold text-amber-400">Connective Tissue Support</span>
+                        <p class="text-[11px] leading-relaxed">인대와 건의 강화를 위해 콜라겐과 비타민 C가 풍부한 식단을 권장합니다.</p>
+                    </div>
+                </div>
             `;
         }
     }
