@@ -136,17 +136,42 @@ document.addEventListener('DOMContentLoaded', () => {
     pose.setOptions({ modelComplexity: 1, smoothLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
     
     pose.onResults((results) => {
+        if (!results.image) return;
+        
+        ctx.save();
         ctx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
         ctx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
         
         if (results.poseLandmarks) {
-            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(59, 130, 246, 0.4)', lineWidth: 3 });
-            drawLandmarks(ctx, results.poseLandmarks, { color: '#fff', lineWidth: 1, radius: 2 });
+            // Skeleton Glow Effect
+            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(59, 130, 246, 0.6)', lineWidth: 4 });
+            drawConnectors(ctx, results.poseLandmarks, POSE_CONNECTIONS, { color: 'rgba(255, 255, 255, 0.3)', lineWidth: 1 });
+            drawLandmarks(ctx, results.poseLandmarks, { color: '#3b82f6', lineWidth: 1, radius: 3 });
             
             if (isKinematicEnabled) analyzeKinematics(results.poseLandmarks);
             drawOnVideoOverlay(results.poseLandmarks);
+            drawJointLabels(results.poseLandmarks);
         }
+        ctx.restore();
     });
+
+    function drawJointLabels(landmarks) {
+        const armAng = calculateAngle(landmarks[11], landmarks[13], landmarks[15]);
+        const kneeAng = calculateAngle(landmarks[24], landmarks[26], landmarks[28]);
+        
+        // Draw Elbow Angle Label
+        drawTextOnJoint(landmarks[13], `${armAng.toFixed(0)}°`, "#3b82f6");
+        // Draw Knee Angle Label
+        drawTextOnJoint(landmarks[26], `${kneeAng.toFixed(0)}°`, "#10b981");
+    }
+
+    function drawTextOnJoint(point, text, color) {
+        ctx.font = "bold 14px Orbitron";
+        ctx.fillStyle = color;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "black";
+        ctx.fillText(text, point.x * outputCanvas.width + 10, point.y * outputCanvas.height - 10);
+    }
 
     let prevLandmarks = null;
     let peaks = [0, 0, 0, 0];
@@ -169,7 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         velocities.forEach((vel, i) => { if (vel > peaks[i]) { peaks[i] = vel; peakTimings[i] = frameCount; } });
         updateChart(velocities.map(v => Math.min(100, v)));
         
-        if (frameCount % 10 === 0) generateSharpAnalysis();
+        if (frameCount % 15 === 0) generateSharpAnalysis();
 
         // Update real-time metrics
         const armAng = calculateAngle(landmarks[11], landmarks[13], landmarks[15]);
@@ -182,7 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('metric-torque').setAttribute('value', (coreTorque * 15).toFixed(0));
         document.getElementById('metric-foot').setAttribute('value', Math.max(0, Math.min(100, footStability)).toFixed(0));
 
-        // Update Final Score (100pt Scale)
         const score = calculateScore(armAng, kneeAng, footStability, coreTorque);
         mainScoreEl.setAttribute('score', score);
 
@@ -190,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function calculateScore(arm, knee, foot, torque) {
-        // Ideal: Arm ~140, Knee ~90, Foot ~100, Torque high
         const armScore = Math.max(0, 25 - Math.abs(140 - arm) * 0.5);
         const kneeScore = Math.max(0, 25 - Math.abs(90 - knee) * 0.5);
         const footScore = Math.max(0, foot * 0.25);
@@ -200,36 +223,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function drawOnVideoOverlay(landmarks) {
         const score = mainScoreEl.getAttribute('score');
-        const arm = document.getElementById('metric-arm').getAttribute('value');
-        const knee = document.getElementById('metric-knee').getAttribute('value');
-        const torque = document.getElementById('metric-torque').getAttribute('value');
-        const foot = document.getElementById('metric-foot').getAttribute('value');
-
-        ctx.save();
-        ctx.font = "bold 20px Orbitron";
-        ctx.fillStyle = "#fff";
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = "rgba(0,0,0,0.5)";
-
-        // Score
-        ctx.fillStyle = "#3b82f6";
-        ctx.fillText(`SCORE: ${score}/100`, 30, 50);
-
-        // Metrics Overlay
-        ctx.font = "bold 12px Inter";
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
-        const metrics = [
-            `ARM: ${arm}°`,
-            `KNEE: ${knee}°`,
-            `TORQUE: ${torque} N/m`,
-            `FOOT: ${foot}%`,
-            `CORE: ${(torque/10).toFixed(1)}`
-        ];
         
-        metrics.forEach((m, i) => {
-            ctx.fillText(m, 30, 80 + (i * 20));
-        });
-        ctx.restore();
+        ctx.font = "bold 24px Orbitron";
+        ctx.fillStyle = "#3b82f6";
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = "rgba(59, 130, 246, 0.5)";
+        ctx.fillText(`ELITE SCORE: ${score}/100`, 30, 50);
+
+        ctx.font = "bold 10px Inter";
+        ctx.fillStyle = "rgba(255,255,255,0.5)";
+        ctx.fillText("AI REAL-TIME BIOMECHANICS FEEDBACK", 30, 70);
     }
 
     function generateSharpAnalysis() {
@@ -368,12 +371,20 @@ document.addEventListener('DOMContentLoaded', () => {
             const url = URL.createObjectURL(file);
             inputVideo.src = url;
             videoOverlay.style.opacity = '0';
-            inputVideo.onloadedmetadata = () => { outputCanvas.width = inputVideo.videoWidth; outputCanvas.height = inputVideo.videoHeight; inputVideo.play(); processVideo(); };
+            inputVideo.onloadedmetadata = () => { 
+                outputCanvas.width = inputVideo.videoWidth; 
+                outputCanvas.height = inputVideo.videoHeight; 
+                inputVideo.play(); 
+                processVideo(); 
+            };
         }
     });
 
     async function processVideo() {
-        if (!inputVideo.paused && !inputVideo.ended) { await pose.send({ image: inputVideo }); requestAnimationFrame(processVideo); }
+        if (!inputVideo.paused && !inputVideo.ended) { 
+            await pose.send({ image: inputVideo }); 
+            requestAnimationFrame(processVideo); 
+        }
     }
 
     reportBtn.addEventListener('click', async () => {
@@ -387,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const canvas = await html2canvas(dashboard, { backgroundColor: '#020408', scale: 1.5, useCORS: true });
             const imgData = canvas.toDataURL('image/png');
             pdf.addImage(imgData, 'PNG', 0, 0, 210, 297);
-            pdf.save(`AIS_Full_Scouting_Report_${Date.now()}.pdf`);
+            pdf.save(`MyBaseballPro_Report_${Date.now()}.pdf`);
         } catch (error) { console.error(error); } 
         finally { reportBtn.innerHTML = "GENERATE REPORT"; reportBtn.disabled = false; }
     });
