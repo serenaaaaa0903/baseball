@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Baseball Pro Feedback | Elite Player Feedback System</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+    <style>
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+        }
+        .review-card {
+            background: rgba(12, 17, 29, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .review-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+<body class="bg-[#020408] text-white font-['Inter'] selection:bg-blue-500/30 overflow-x-hidden">
+    <div class="noise-overlay"></div>
+    <div class="ambient-glow"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-[100] backdrop-blur-md border-b border-white/5 bg-black/20">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex flex-col">
+                <span class="proto-font text-xl font-black italic tracking-tighter">MY BASEBALL <span class="text-blue-500">PRO</span></span>
+                <span class="text-[7px] font-extrabold text-slate-500 uppercase tracking-[0.4em]">Elite Player Feedback System</span>
+            </div>
+            <a href="index.html" class="btn-primary text-sm py-2 px-6">GET STARTED</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative pt-32 pb-20 px-6 overflow-hidden">
+        <div class="hero-gradient absolute inset-0 pointer-events-none"></div>
+        <div class="max-w-5xl mx-auto text-center relative z-10">
+            <span class="inline-block px-4 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[10px] font-bold uppercase tracking-widest mb-6">Next-Gen AI Analytics</span>
+            <h1 class="proto-font text-5xl md:text-7xl font-black italic mb-6 leading-tight">
+                UNLOCK YOUR <br> <span class="text-blue-500">ELITE POTENTIAL</span>
+            </h1>
+            <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                최첨단 AI 모션 트래킹 기술로 투구와 타격 폼을 정밀 분석합니다. <br>
+                프로 레벨의 피드백을 통해 당신의 퍼포먼스를 한 단계 더 높이세요.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="index.html" class="btn-primary py-4 px-10 text-base">무료 분석 시작하기</a>
+                <button class="btn-secondary py-4 px-10 text-base">시스템 특징 보기</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Review Section -->
+    <section class="py-20 px-6 relative z-10 bg-white/[0.02]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="proto-font text-3xl font-bold mb-4">REAL <span class="text-blue-500">FEEDBACK</span></h2>
+                <p class="text-slate-500 text-sm uppercase tracking-widest font-bold">전국의 선수와 동호인이 경험한 놀라운 변화</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- Reviews will be injected here by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-32 px-6 text-center relative overflow-hidden">
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-500/10 blur-[120px] rounded-full"></div>
+        <div class="relative z-10 max-w-3xl mx-auto">
+            <h2 class="proto-font text-4xl font-black mb-8 italic">READY TO GO <span class="text-blue-500">PRO?</span></h2>
+            <p class="text-slate-400 mb-10">지금 바로 동영상을 업로드하고 당신의 키네마틱 시퀀스를 확인하세요.</p>
+            <a href="index.html" class="btn-primary py-5 px-12 text-lg font-black italic">LAUNCH ANALYTICS DASHBOARD</a>
+        </div>
+    </section>
+
+    <footer class="py-10 border-t border-white/5 text-center text-slate-600 text-[10px] uppercase tracking-[0.3em]">
+        © 2026 MY BASEBALL PRO FEEDBACK. ALL RIGHTS RESERVED.
+    </footer>
+
+    <script>
+        const reviews = [
+            { name: "김민재", age: 18, job: "고등학생 (엘리트 투수)", content: "투구 폼 수정 후 구속이 5km/h 올랐습니다. 힙-숄더 세퍼레이션 수치를 직접 눈으로 확인하니 보완점이 명확해졌어요!", rating: 5 },
+            { name: "이준호", age: 24, job: "대학생 (야구 동호회)", content: "취미로 시작했지만 제대로 배우고 싶었는데, 이 앱이 최고의 코치 역할을 해줍니다. 키네마틱 시퀀스 분석이 정말 신기해요.", rating: 5 },
+            { name: "박상훈", age: 35, job: "직장인 (사회인 야구 3부)", content: "주말마다 야구하는 게 낙인데, 비디오 분석 덕분에 고질적인 슬라이스 타구가 교정됐습니다. 동료들에게도 추천 중입니다.", rating: 5 },
+            { name: "최예나", age: 21, job: "대학생 (야구 취미반)", content: "여자 야구팀에서 활동하며 폼 고민이 많았는데, 시각적인 데이터로 보여주니 이해가 너무 빠릅니다. UI가 정말 미래적이에요!", rating: 4 },
+            { name: "정대협", age: 42, job: "개인사업자 (사회인 야구 1부)", content: "나이가 들면서 파워가 떨어지는 걸 고민했는데, 지면 반발력 활용법을 분석받고 다시 전성기 때 타구 비거리를 회복했습니다.", rating: 5 },
+            { name: "강현우", age: 17, job: "고등학생 (야구부 입시생)", content: "입시를 앞두고 제 폼의 정밀 데이터가 필요했는데, 리포트 내용이 너무 전문적이라 감독님께 보여드렸더니 깜짝 놀라시더라고요.", rating: 5 },
+            { name: "윤도현", age: 29, job: "IT 엔지니어 (야구 동호회)", content: "기술적인 데이터 분석을 선호하는데, 이 앱은 과학적 근거를 바탕으로 피드백을 주니 신뢰가 갑니다. 매일 사용하고 싶어요.", rating: 5 },
+            { name: "조성모", age: 50, job: "회사 임원 (야구 동호회 회장)", content: "동호회 회원들과 함께 사용하고 있습니다. 실력 차이가 나는 회원들에게 객관적인 데이터를 보여주기 너무 좋습니다.", rating: 5 },
+            { name: "한지민", age: 26, job: "취업준비생 (야구 취미반)", content: "야구를 시작한 지 얼마 안 된 초보인데, 'Director's Verdict' 코너의 조언이 정말 따뜻하고 전문적이라 큰 힘이 됩니다.", rating: 5 },
+            { name: "임성규", age: 38, job: "영업직 (사회인 야구 2부)", content: "매번 경기 후 제 타격 영상을 분석합니다. 리포트 PDF 저장 기능이 있어서 저만의 성장 일지를 만드는 기분이에요!", rating: 4 }
+        ];
+
+        const container = document.getElementById('reviews-container');
+        reviews.forEach(review => {
+            const card = document.createElement('div');
+            card.className = 'review-card p-8 rounded-3xl flex flex-col gap-4';
+            card.innerHTML = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-bold text-white mb-1">${review.name} (${review.age}세)</h4>
+                        <span class="text-[10px] text-blue-400 font-bold uppercase tracking-widest">${review.job}</span>
+                    </div>
+                    <div class="flex text-amber-500">
+                        ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}
+                    </div>
+                </div>
+                <p class="text-slate-400 text-sm leading-relaxed italic">"${review.content}"</p>
+            `;
+            container.appendChild(card);
+        });
+    </script>
+</body>
+</html>

@@ -1,7 +1,7 @@
-# **AIS (AI Scouting) - Project Blueprint**
+# **My Baseball Pro Feedback - Project Blueprint**
 
 ## **1. Project Overview**
-AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인 스카우팅 리포트를 제공하는 최첨단 플랫폼입니다. 2026년형 **High-Tech AI Sports Analytics Dashboard** UI를 통해 프로 수준의 분석 경험을 제공합니다.
+My Baseball Pro Feedback (Elite Player Feedback System)은 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인 스카우팅 리포트를 제공하는 최첨단 플랫폼입니다. 2026년형 **High-Tech AI Sports Analytics Dashboard** UI를 통해 프로 수준의 분석 경험을 제공합니다.
 
 ## **2. Design & Aesthetics**
 *   **Theme:** Dark Mode, Futuristic, and Professional.
@@ -13,20 +13,17 @@ AIS는 야구 선수의 투구 및 타격 폼을 AI로 분석하여 전문적인
 *   **Visual Effects:** Multi-layered drop shadows, subtle noise texture, ambient glow.
 
 ## **3. Layout Structure**
-*   **Left Section:** Large Video Playback area with skeletal motion tracking overlay.
-*   **Right Section:** Detailed Data Panel.
-    *   **Header:** "Final Scouting Grade" (e.g., 59/80).
-    *   **Metrics Grid:** Cards for ARM-ANG, KNEE-DRV, TORQUE, and FOOT-FIX.
-    *   **Inset Images:** Small skeletal motion tracking thumbnails within data cards.
-*   **Bottom Section:** "Director's Verdict" text box with Korean commentary.
-*   **Controls:** Sleek "UPLOAD VIDEO" and "GENERATE REPORT" buttons.
+*   **Landing Page (`landing.html`):** Branding, features overview, and 10+ user reviews from diverse groups (18-50 years old).
+*   **Analysis Dashboard (`index.html`):** Large Video Playback area with skeletal motion tracking overlay (1.4fr : 0.6fr ratio).
+*   **Data Panel:** Detailed metrics grid, kinematic sequence analytics, and "Director's Verdict" text box.
 
 ## **4. Current Implementation Plan**
-1.  **Dashboard Layout Optimization:** Adjust the grid ratio to provide a larger, more immersive video analysis area (1.4fr : 0.6fr).
-2.  **Professional Scouting Language:** Update analysis logic to use advanced biomechanical terminology (e.g., Hip-Shoulder Separation, Ground Reaction Force, Elastic Energy Transfer).
-3.  **Enhanced Report Content:** Refine the AI Prescription and Director's Verdict with professional athletic training and scouting insights.
-4.  **Video Control Improvements:** Ensure the video canvas maintains high fidelity and fits the optimized layout.
+1.  **Branding Overhaul:** Rename project to "My Baseball Pro Feedback" and "Elite Player Feedback System" across all files.
+2.  **Promotional Landing Page:** Create `landing.html` with high-impact visuals and authentic user feedback.
+3.  **Dashboard Layout Optimization:** Adjusted grid ratio for immersive video analysis.
+4.  **Professional Scouting Language:** Advanced biomechanical terminology (Hip-Shoulder Separation, GRF, etc.).
+5.  **Enhanced Report Content:** AI Prescription and Director's Verdict with professional training insights.
 
 ---
 
-*Last Updated: 2026-04-04 (v1.1)*
+*Last Updated: 2026-04-04 (v1.2)*

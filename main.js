@@ -1,6 +1,6 @@
 /**
- * AIS Diagnostics - Main Engine
- * High-tech AI sports analytics dashboard with On-video Overlay & AI Prescription.
+ * My Baseball Pro Feedback - Main Engine
+ * Elite Player Feedback System with AI Motion Analytics.
  */
 
 // --- Web Components ---
